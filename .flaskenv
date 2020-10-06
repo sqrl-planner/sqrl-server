@@ -1,0 +1,1 @@
+FLASK_APP="./sqrl/__init__.py"
