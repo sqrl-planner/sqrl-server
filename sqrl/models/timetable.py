@@ -53,8 +53,8 @@ instructors_sections = db.Table(
     db.Column('instructor_id', db.Integer, db.ForeignKey('instructor.id'))
 )
 
-class SectionMeetingTime(db.Model):
-    """A model representing a meeting time of a section."""
+class SectionMeeting(db.Model):
+    """A model representing a meeting of a section."""
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.Enum(MeetingDay))
     start_time = db.Column(db.Time)
@@ -68,6 +68,10 @@ class SectionMeetingTime(db.Model):
 class Section(db.Model):
     """A model representing a course section/meeting."""
     id = db.Column(db.Integer, primary_key=True)
+
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
+    course = db.relationship('Course', back_populates='sections')
+
     teaching_method = db.Column(db.Enum(SectionTeachingMethod))
     section_number = db.Column(db.String(32))
     subtitle = db.Column(db.Text)
@@ -77,7 +81,7 @@ class Section(db.Model):
     )
 
     meetings = db.relationship(
-        'SectionMeetingTime',
+        'SectionMeeting',
         back_populates='section'
     )
 
@@ -108,8 +112,12 @@ class Course(db.Model):
     title = db.Column(db.Text)
     description = db.Column(db.Text)
 
-    section = db.Column(db.Enum(CourseTerm))
+    term = db.Column(db.Enum(CourseTerm))
     session = db.Column(db.String(5), index=True)
+    sections = db.relationship(
+        'Section',
+        back_populates='course'
+    )
 
     prerequisite = db.Column(db.Text)
     corequisite = db.Column(db.Text)

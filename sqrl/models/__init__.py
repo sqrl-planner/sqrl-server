@@ -4,7 +4,7 @@ from sqrl.models.timetable import (
     SectionDeliveryMode,
     MeetingDay,
     Instructor,
-    SectionMeetingTime,
+    SectionMeeting,
     Section,
     CourseTerm,
     Course
