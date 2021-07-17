@@ -1,28 +1,32 @@
 """Syncs data from the timetable API."""
-
 import json
 import tqdm
 import datetime
+from typing import Optional, Union, List
+from pathlib import Path
+
 from sqrl import models
 from sqrl.utils import to_int
 from sqrl.extensions import db
 
-def convert_time_str(time_str):
-    """Convert a length-5 string in the format HH:MM using a
-    24-hour clock to a datetime.time object.
+
+def convert_time(time: str) -> datetime.time:
+    """Convert a length-5 time string in the format HH:MM using a 24-hour clock to a
+    datetime.time object.
 
     >>> result = datetime.time(hour=8, minute=30)
-    >>> result == convert_time_str("08:30")
+    >>> result == convert_time("08:30")
     True
     >>> result = datetime.time(hour=11, minute=0)
-    >>> result == convert_time_str("11:00")
+    >>> result == convert_time("11:00")
     True
     """
     # Parts is a list consisting of two elements: hours and minutes.
-    parts = [int(part) for part in time_str.split(':')]
+    parts = [int(part) for part in time.split(':')]
     return datetime.time(parts[0], parts[1])
 
-def convert_instructor(instructor_data):
+
+def convert_instructor(instructor_data: dict) -> models.Instructor:
     """Convert JSON instructor data to a :class:`sqrl.models.Instructor`."""
     instructor_id = int(instructor_data['instructorId'])
     instructor = models.Instructor.query.filter_by(
@@ -39,12 +43,14 @@ def convert_instructor(instructor_data):
     db.session.flush()
     return instructor
 
-def convert_instructors(instructors_data):
+
+def convert_instructors(instructors_data: dict) -> List[models.Instructor]:
     """Convert JSON instructors data to a list of :class:`sqrl.models.Instructor` objects."""
     if len(instructors_data) == 0: return list()
     return [convert_instructor(x) for x in instructors_data.values()]
 
-def convert_meetings(meetings_data):
+
+def convert_meetings(meetings_data: dict) -> List[models.SectionMeeting]:
     """Convert JSON meetings data to a list of :class:`sqrl.models.SectionMeeting` objects."""
     if len(meetings_data) == 0: return list()
 
@@ -66,8 +72,8 @@ def convert_meetings(meetings_data):
             meeting = models.SectionMeeting(
                 id=meeting_id,
                 day=models.MeetingDay(day),
-                start_time=convert_time_str(start_time),
-                end_time=convert_time_str(end_time),
+                start_time=convert_time(start_time),
+                end_time=convert_time(end_time),
                 assigned_room_1=meeting_data.get('assignedRoom1', None),
                 assigned_room_2=meeting_data.get('assignedRoom2', None)
             )
@@ -75,8 +81,8 @@ def convert_meetings(meetings_data):
             db.session.add(meeting)
         else:
             meeting.day = models.MeetingDay(day)
-            meeting.start_time = convert_time_str(start_time)
-            meeting.end_time = convert_time_str(end_time)
+            meeting.start_time = convert_time(start_time)
+            meeting.end_time = convert_time(end_time)
             meeting.assigned_room_1 = meeting_data.get('assignedRoom1', None)
             meeting.assigned_room_2 = meeting_data.get('assignedRoom2', None)
 
@@ -86,17 +92,24 @@ def convert_meetings(meetings_data):
 
     return meetings
 
-def _to_section_teaching_method(value):
+
+def _to_section_teaching_method(value: str) -> Optional[models.SectionTeachingMethod]:
     """Convert a string to a :class:`sqrl.models.SectionTeachingMethod`."""
-    if value is None: return None
-    return models.SectionTeachingMethod(value)
+    if value is None:
+        return None
+    else:
+        return models.SectionTeachingMethod(value)
 
-def _to_section_delivery_mode(value):
+
+def _to_section_delivery_mode(value: str) -> Optional[models.SectionDeliveryMode]:
     """Convert a string to a :class:`sqrl.models.SectionDeliveryMode`."""
-    if value is None: return None
-    return models.SectionDeliveryMode(value)
+    if value is None:
+        return None
+    else:
+        return models.SectionDeliveryMode(value)
 
-def convert_section(section_data):
+
+def convert_section(section_data: dict) -> models.Section:
     """Convert JSON section data to a :class:`sqrl.models.Section`."""
     section_id = int(section_data['meetingId'])
     section = models.Section.query.filter_by(
@@ -126,11 +139,13 @@ def convert_section(section_data):
     db.session.flush()
     return section
 
-def convert_sections(sections_data):
+
+def convert_sections(sections_data: dict) -> List[models.Section]:
     """Convert JSON sections data to a list of :class:`sqrl.models.Section` objects."""
     return [convert_section(x) for x in sections_data.values()]
 
-def convert_organisation(code, name):
+
+def convert_organisation(code: str, name: str) -> models.Organisation:
     """Gets an organisation, or creates it if it doesn't exist.
 
     :param code:
@@ -151,7 +166,8 @@ def convert_organisation(code, name):
     db.session.flush()
     return organisation
 
-def convert_course(course_data):
+
+def convert_course(course_data: dict) -> models.Course:
     """Convert JSON course data to a :class:`sqrl.models.Course`."""
     course_id = int(course_data['courseId'])
     course = models.Course.query.filter_by(
@@ -189,14 +205,12 @@ def convert_course(course_data):
     db.session.flush()
     return course
 
-def sync_from_file(filepath):
-    """
-    Syncs course data from a JSON file.
 
-    The data should be in the raw format provided
-    by the UofT timetable API.
+def sync_from_file(filepath: Union[str, Path]):
     """
-
+    Syncs course data from a JSON file. The data should be in the format provided by the UofT
+    timetable API (https://timetable.iit.artsci.utoronto.ca/).
+    """
     with open(filepath) as file:
         courses_data = json.load(file)
 

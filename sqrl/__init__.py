@@ -1,10 +1,13 @@
 """Entrypoint for the Flask app."""
-
 import mimetypes
-from flask import Flask
 from pathlib import Path
+from typing import Union, Any
 
-def create_app(instance_config_filename='local_config.py', test_config=None):
+from flask import Flask
+
+
+def create_app(instance_config_filename: Union[str, Path] = 'local_config.py',
+               test_config: Any = None) -> Flask:
     """Creates the Flask app."""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object('sqrl.config')
@@ -29,3 +32,4 @@ def create_app(instance_config_filename='local_config.py', test_config=None):
     mimetypes.add_type('text/javascript', '.js')
 
     return app
+    
