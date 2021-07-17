@@ -25,11 +25,10 @@ DEFAULT_HEADERS = {
 
 def is_session_code_valid(session_code: str) -> bool:
     """Verifies a session code against the API. Return whether the session code is valid."""
-    # To verify the session code, we use it to find a course.
-    # The session code is valid if the course is found.
-    # We assume that MAT137 will be in all sessions (which is a reasonable
-    # assumption to make seeing as it is required for many different majors,
-    # and the recent rise in popularity of computer science).
+    # To verify the session code, we use it to find a course. The session code is valid if the
+    # course is found. We assume that MAT137 will be in all sessions (which is a reasonable
+    # assumption since it is a required course for a variety of majors, including computer science,
+    # which has only been rising in popularity in the past few decades).
     SEARCH_COURSE = 'MAT137'
     data = requests.get(f'{API_URL}/{session_code}/courses?code={SEARCH_COURSE}').json()
     return len(data) > 0
