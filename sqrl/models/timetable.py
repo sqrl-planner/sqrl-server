@@ -127,9 +127,9 @@ class Section(db.Model):
                                                              nullable=True)
     cancelled: bool = db.Column(db.Boolean)
     has_waitlist: bool = db.Column(db.Boolean)
-    enrollment_capacity: int = db.Column(db.Integer)
-    actual_enrolment: int = db.Column(db.Integer)
-    actual_waitlist: int = db.Column(db.Integer)
+    enrollment_capacity: Optional[int] = db.Column(db.Integer, nullable=True)
+    actual_enrolment: Optional[int] = db.Column(db.Integer, nullable=True)
+    actual_waitlist: Optional[int] = db.Column(db.Integer, nullable=True)
     enrolment_indicator: Optional[str] = db.Column(db.String(32), nullable=True)
 
 
