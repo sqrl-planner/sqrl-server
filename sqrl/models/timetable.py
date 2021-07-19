@@ -153,9 +153,9 @@ class Course(db.Model):
         term: The term in which the course takes place.
         session: The session in which the course takes place.
         sections: A list of sections available for this course.
-        prerequisite: Prerequisties for this course.
-        corequisite: Corequisites for this course.
-        exclusion: Exclusions for this course.
+        prerequisites: Prerequisties for this course.
+        corequisites: Corequisites for this course.
+        exclusions: Exclusions for this course.
         recommended_preparation: Recommended preparations to complete before this course.
         breadth_categories: The breadth categories this course can fulfill.
         distribution_categories: The distribution categories this course can fulfill.
@@ -171,9 +171,9 @@ class Course(db.Model):
     term: CourseTerm = db.Column(db.Enum(CourseTerm))
     session: str = db.Column(db.String(5), index=True)
     sections: List[Section] = db.relationship('Section', back_populates='course')
-    prerequisite: str = db.Column(db.Text)  # TODO: Parse this
-    corequisite: str = db.Column(db.Text)  # TODO: Parse this
-    exclusion: str = db.Column(db.Text)  # TODO: Parse this
+    prerequisites: str = db.Column(db.Text)  # TODO: Parse this
+    corequisites: str = db.Column(db.Text)  # TODO: Parse this
+    exclusions: str = db.Column(db.Text)  # TODO: Parse this
     recommended_preparation: str = db.Column(db.Text)
     breadth_categories: str = db.Column(db.Text)  # TODO: Parse this
     distribution_categories: str = db.Column(db.Text)  # TODO: Parse this
