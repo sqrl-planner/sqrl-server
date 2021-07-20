@@ -1,18 +1,18 @@
 """Custom commands used with the Flask CLI."""
+import time
 import click
-from pathlib import Path
 
 from flask.app import Flask
 from flask.cli import with_appcontext
 
 from sqrl.extensions import db
-from sqrl.data_sync import sync_from_file
+from sqrl.data.sources import UTSGTimetable
 
 
 def init_app(app: Flask) -> None:
     """Initializes click commands with an app context."""
     app.cli.add_command(_init_db_command)
-    app.cli.add_command(_load_courses_command)
+    app.cli.add_command(_sync_datasets)
 
 
 @click.command('init-db')
@@ -26,13 +26,16 @@ def _init_db_command() -> None:
         click.echo('Initialized the database: dropped and recreated all tables.')
 
 
-@click.command('load-courses')
-@click.argument('courses_json_filepath', type=Path)
+@click.command('sync-datasets')
 @with_appcontext
-def _load_courses_command(courses_json_filepath: Path) -> None:
-    """Loads courses from a JSON file."""
+def _sync_datasets() -> None:
+    """Sync database with data scraped from UofT APIs."""
     confirmation = click.confirm('Are you sure you would like to continue? This cannot be undone!')
     if confirmation:
-        sync_from_file(courses_json_filepath)
-        click.echo(f'Loaded data from \'{courses_json_filepath.resolve()}\'')
+        sources = [UTSGTimetable(db)]
+        for source in sources:
+            start_time = time.time()
+            source.scrape_and_sync()
+            elapsed = time.time() - start_time
+            click.echo(f'Synced data from {source.__class__.__name__}! Took {elapsed:.2f} seconds')
         

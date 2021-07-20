@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 import requests
 from bs4 import BeautifulSoup
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative.api import instrument_declarative
 
 from sqrl import models
 from sqrl.utils import nullable_convert, int_or_none
@@ -66,18 +67,18 @@ class UTSGTimetable(DatasetSource):
     def scrape_and_sync(self) -> None:
         """Scrape course data from the Faculty of Arts and Science timetable, convert it to
         sqrl.models objects, and merge it into the database."""
-        for course_data in self._get_all_courses():
+        for course_data in self._get_all_courses().values():
             self._sync_course(course_data)
 
-        self._db.commit()
+        self._db.session.commit()
         
-    def _get_all_courses(self) -> list[dict]:
-        """Return all the courses in the session."""
+    def _get_all_courses(self) -> dict[str, dict]:
+        """Return all the courses in the session as a dict mappng each course code its json data."""
         organisations = self._get_organisations()
-        return [
-            course for organisation_code in organisations
-            for course in self._get_courses_in_organsisation(organisation_code)
-        ]
+        return {
+            name: data for organisation_code in organisations
+            for name, data in self._get_courses_in_organsisation(organisation_code).items()
+        }
 
     def _get_courses_in_organsisation(self, organisation_code: str) -> dict[str, dict]:
         """Return all the courses belonging to the specified organisation as a dict mapping each course
@@ -198,11 +199,19 @@ class UTSGTimetable(DatasetSource):
         )    
         section.section_number = section_data['sectionNumber']
         section.subtitle = section_data['subtitle']
+
+        if (instructors := section_data.get('instructors', [])) == []:
+            # Replace empty list with empty dict for consistency
+            instructors = {}
         section.instructors = [
-            self._sync_instructor(instructor_data) for instructor_data in
-            section_data['instructors'].values()
+            self._sync_instructor(instructor_data)
+            for instructor_data in instructors.values()
         ]
-        section.meetings = self._sync_section_meeting(section_data['schedule'])
+
+        if (schedule := section_data.get('schedule', [])) == []:
+            # Replace empty list with empty dict for consistency
+            schedule = {}
+        section.meetings = self._sync_section_meetings(schedule)
 
         section.delivery_mode = nullable_convert(
             section_data.get('deliveryMode', None),
@@ -275,8 +284,7 @@ class UTSGTimetable(DatasetSource):
 
             self._db.session.flush()
             meetings.append(meeting)
-
-        return meeting
+        return meetings
 
     @staticmethod
     def _convert_time(time: str) -> datetime.time:
