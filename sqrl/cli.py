@@ -35,7 +35,7 @@ def _sync_datasets() -> None:
         sources = [UTSGTimetable(db)]
         for source in sources:
             start_time = time.time()
-            source.scrape_and_sync()
+            source.pull_and_sync()
             elapsed = time.time() - start_time
             click.echo(f'Synced data from {source.__class__.__name__}! Took {elapsed:.2f} seconds')
         

@@ -23,8 +23,8 @@ class DatasetSource(ABC):
         self._db = db
 
     @abstractmethod
-    def scrape_and_sync(self, *args: Any, **kwargs: Any) -> None:
-        """Scrape data from the source, and merge it into the database."""
+    def pull_and_sync(self, *args: Any, **kwargs: Any) -> None:
+        """Pull data from the source and sync it with the database."""
         raise NotImplementedError
 
 
@@ -64,9 +64,9 @@ class UTSGTimetable(DatasetSource):
         else:
             self.session_code = session_code
 
-    def scrape_and_sync(self) -> None:
-        """Scrape course data from the Faculty of Arts and Science timetable, convert it to
-        sqrl.models objects, and merge it into the database."""
+    def pull_and_sync(self) -> None:
+        """Pull course data from the Faculty of Arts and Science timetable API, convert it to
+        sqrl.models objects, and sync it with the database."""
         for course_data in self._get_all_courses().values():
             self._sync_course(course_data)
 
