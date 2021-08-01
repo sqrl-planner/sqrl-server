@@ -2,5 +2,7 @@
 flask
 flask-migrate
 flask-sqlalchemy
+# Scheduler
+schedule
 # Misc
 tqdm
