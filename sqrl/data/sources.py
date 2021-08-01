@@ -7,7 +7,6 @@ from abc import ABC, abstractmethod
 import requests
 from bs4 import BeautifulSoup
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.declarative.api import instrument_declarative
 
 from sqrl import models
 from sqrl.utils import nullable_convert, int_or_none
