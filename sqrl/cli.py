@@ -1,12 +1,12 @@
 """Custom commands used with the Flask CLI."""
 import time
-import click
 
+import click
 from flask.app import Flask
 from flask.cli import with_appcontext
 
-from sqrl.extensions import db
 from sqrl.data.sources import UTSGTimetable
+from sqrl.extensions import db
 
 
 def init_app(app: Flask) -> None:
@@ -15,7 +15,7 @@ def init_app(app: Flask) -> None:
     app.cli.add_command(_sync_datasets)
 
 
-@click.command('init-db')
+@click.command('init-db') 
 @with_appcontext
 def _init_db_command() -> None:
     """Recreates the database."""

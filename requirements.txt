@@ -2,7 +2,5 @@
 flask
 flask-migrate
 flask-sqlalchemy
-# Task-queue
-celery
 # Misc
 tqdm
