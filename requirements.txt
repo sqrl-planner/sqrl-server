@@ -2,6 +2,9 @@
 flask
 flask-migrate
 flask-sqlalchemy
+# GraphQL
+graphene
+flask-graphql
 # Scheduler
 schedule
 # Misc
