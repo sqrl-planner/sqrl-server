@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 import requests
 from bs4 import BeautifulSoup
-from flask_sqlalchemy import SQLAlchemy
+from flask_mongoengine import MongoEngine
 
 from sqrl import models
 from sqrl.utils import nullable_convert, int_or_none
@@ -16,9 +16,9 @@ class DatasetSource(ABC):
     """An abstract class representing a dataset source."""
     # Private Instance Attributes:
     #   _db: The database session.
-    _db: SQLAlchemy
+    _db: MongoEngine
 
-    def __init__(self, db: SQLAlchemy) -> None:
+    def __init__(self, db: MongoEngine) -> None:
         self._db = db
 
     @abstractmethod
@@ -51,7 +51,7 @@ class UTSGTimetable(DatasetSource):
     }
     session_code: Optional[str]
 
-    def __init__(self, db: SQLAlchemy, session_code: Optional[str] = None) -> None:
+    def __init__(self, db: MongoEngine, session_code: Optional[str] = None) -> None:
         """Initialise an ArtsciTimetableAPI.
         
         Args:
