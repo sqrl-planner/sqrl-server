@@ -21,16 +21,11 @@ def create_app(instance_config_filename: Union[str, Path] = 'local_config.py',
     except OSError:
         pass
 
-    # Extensions has to be imported first so that the
-    # celery base task is properly initialized
-    from sqrl import extensions
-    extensions.init_app(app)
-
     # from sqrl import routes, models, cli
-    from sqrl import models, cli, graphql
+    from sqrl import extensions, models, cli
+    extensions.init_app(app)
     # routes.init_app(app)
     cli.init_app(app)
-    graphql.init_app(app)
 
     # Register mimetypes
     mimetypes.add_type('text/css', '.css')

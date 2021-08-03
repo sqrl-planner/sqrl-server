@@ -1,8 +1,8 @@
 """SQLAlchemy database extension."""
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from flask_mongoengine import MongoEngine
 
-db = SQLAlchemy()
+db = MongoEngine()
 
 
 def init_app(app: Flask) -> None:

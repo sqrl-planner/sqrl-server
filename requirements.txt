@@ -1,7 +1,7 @@
 # Flask
 flask
-flask-migrate
-flask-sqlalchemy
+# MongoDB
+flask-mongoengine
 # GraphQL
 ariadne
 # Scheduler

@@ -1,9 +1,65 @@
 """Model data classes for timetable."""
 import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import List, Optional
 
+import mongoengine
 from sqrl.extensions import db
+
+
+class Organisation(db.Document):
+    """
+    A class representing a department (which offers courses).
+
+    Instance Attributes:
+        code: A unique string representing this organisation.
+        name: The full name of this organisation.
+    """
+    code: str = db.StringField(primary_key=True)
+    name: str = db.StringField(required=True)
+
+
+class Instructor(db.Document):
+    """A class representing a course instructor.
+    
+    Instance Attributes:
+        id: A unique integer id representing this instructor as returned by the API.
+        first_name: The first name of this instructor.
+        last_name: The last name of this instructor.
+    """
+    id: int = db.IntField(primary_key=True, unique=True, required=True)
+    first_name: str = db.StringField(required=True)
+    last_name: str = db.StringField(required=True)
+
+
+class MeetingDay(Enum):
+    """A class representing the day of the week."""
+    MONDAY = 'MO'
+    TUESDAY = 'TU'
+    WEDNESDAY = 'WE'
+    THURSDAY = 'TH'
+    FRIDAY = 'FR'
+    SATURDAY = 'SA'
+    SUNDAY = 'SU'
+
+
+class SectionMeeting(db.Document):
+    """A class representing a meeting of a section.
+
+    Instance Attributes:
+        day: The day of this meeting.
+        start_time: The start time of this meeting.
+        end_time: The end time of this meeting.
+        assigned_room_1: A string representing the first assigned room for this meeting, or None
+            if there is no first assigned room.
+        assigned_room_2: A string representing the second assigned room for this meeting, or None
+            if there is no second assigned room.
+    """
+    day: MeetingDay = db.EnumField(MeetingDay, required=True)
+    start_time: datetime.datetime = db.DateTimeField(required=True)
+    end_time: datetime.datetime = db.DateTimeField(required=True)
+    assigned_room_1: Optional[str] = db.StringField(null=True)
+    assigned_room_2: Optional[str] = db.StringField(null=True)
 
 
 class SectionTeachingMethod(Enum):
@@ -20,84 +76,10 @@ class SectionDeliveryMode(Enum):
     ONLINE_ASYNC = 'ONLASYNC'
 
 
-class MeetingDay(Enum):
-    """A class representing the day of the week."""
-    MONDAY = 'MO'
-    TUESDAY = 'TU'
-    WEDNESDAY = 'WE'
-    THURSDAY = 'TH'
-    FRIDAY = 'FR'
-    SATURDAY = 'SA'
-    SUNDAY = 'SU'
-
-
-class Organisation(db.Model):
-    """
-    A class representing a department (which offers courses).
-
-    Instance Attributes:
-        id: A unique integer id representing this organisation.
-        code: A unique string representing this organisation.
-        name: The full name of this organisation.
-    """
-    id: int = db.Column(db.Integer, primary_key=True)
-    code: str = db.Column(db.String(32), unique=True, index=True)
-    name: str = db.Column(db.Text)
-
-
-class Instructor(db.Model):
-    """A class representing a course instructor.
-    
-    Instance Attributes:
-        id: A unique integer id representing this instructor.
-        first_name: The first name of this instructor.
-        last_name: The last name of this instructor.
-    """
-    id: int = db.Column(db.Integer, primary_key=True)
-    first_name: str = db.Column(db.Text)
-    last_name: str = db.Column(db.Text)
-
-
-class SectionMeeting(db.Model):
-    """A class representing a meeting of a section.
-
-    Instance Attributes:
-        id: A unique integer id representing this meeting.
-        day: The day of this meeting.
-        start_time: The start time of this meeting.
-        end_time: The end time of this meeting.
-        assigned_room_1: A string representing the first assigned room for this meeting, or None
-            if there is no first assigned room.
-        assigned_room_2: A string representing the second assigned room for this meeting, or None
-            if there is no second assigned room.
-        section_id: The id of the Section that this meeting is associated with.
-        section: The Section that this meeting is associated with.
-    """
-    id: int = db.Column(db.Integer, primary_key=True)
-    day: MeetingDay = db.Column(db.Enum(MeetingDay))
-    start_time: datetime.time = db.Column(db.Time)
-    end_time: datetime.time = db.Column(db.Time)
-    assigned_room_1: Optional[str] = db.Column(db.Text, nullable=True)
-    assigned_room_2: Optional[str] = db.Column(db.Text, nullable=True)
-    section_id: int = db.Column(db.Integer, db.ForeignKey('section.id'))
-    section: 'Section' = db.relationship('Section', back_populates='meetings')
-
-
-# An association table mapping sections to their instructors.
-instructors_sections = db.Table(
-    'instructor_section_association',
-    db.Column('section_id', db.Integer, db.ForeignKey('section.id')),
-    db.Column('instructor_id', db.Integer, db.ForeignKey('instructor.id'))
-)
-
-
-class Section(db.Model):
+class Section(db.Document):
     """A class representing a course section/meeting.
     
     Instance Attributes:
-        id: A unique integer id representing this section.
-        course_id: The id of the course that this section is associated with.
-        course: The Course that this section is associated with.
         teaching_method: The teaching method for this section, or None if this section has no
             teaching method.
         section_number: The number of this section, representing as a string.
@@ -114,23 +96,18 @@ class Section(db.Model):
         enrollment_indicator: A string representing the enrollment indicator for this section,
             or None if there is no enrollment indicator.
     """
-    id = db.Column(db.Integer, primary_key=True)
-    course_id: int = db.Column(db.Integer, db.ForeignKey('course.id'))
-    course: 'Course' = db.relationship('Course', back_populates='sections')
-    teaching_method: Optional[SectionTeachingMethod] = db.Column(db.Enum(SectionTeachingMethod),
-                                                                 nullable=True)
-    section_number: str = db.Column(db.String(32))
-    subtitle: Optional[str] = db.Column(db.Text, nullable=True)
-    instructors: List[Instructor] = db.relationship('Instructor', secondary=instructors_sections)
-    meetings: List[SectionMeeting] = db.relationship( 'SectionMeeting', back_populates='section')
-    delivery_mode: Optional[SectionDeliveryMode] = db.Column(db.Enum(SectionDeliveryMode),
-                                                             nullable=True)
-    cancelled: bool = db.Column(db.Boolean)
-    has_waitlist: bool = db.Column(db.Boolean)
-    enrollment_capacity: Optional[int] = db.Column(db.Integer, nullable=True)
-    actual_enrolment: Optional[int] = db.Column(db.Integer, nullable=True)
-    actual_waitlist: Optional[int] = db.Column(db.Integer, nullable=True)
-    enrolment_indicator: Optional[str] = db.Column(db.String(32), nullable=True)
+    teaching_method: SectionTeachingMethod = db.EnumField(SectionTeachingMethod)
+    section_number: str = db.StringField()
+    subtitle: Optional[str] = db.StringField(null=True)
+    instructors: List[Instructor] = db.ListField(db.ReferenceField('Instructor'))
+    meetings: List[SectionMeeting] = db.ListField(db.ReferenceField('SectionMeeting'))
+    delivery_mode: SectionDeliveryMode = db.EnumField(SectionDeliveryMode)
+    cancelled: bool = db.BooleanField()
+    has_waitlist: bool = db.BooleanField()
+    enrollment_capacity: Optional[int] = db.IntField(null=True)
+    actual_enrolment: Optional[int] = db.IntField(null=True)
+    actual_waitlist: Optional[int] = db.IntField(null=True)
+    enrolment_indicator: Optional[str] = db.StringField(null=True)
 
 
 class CourseTerm(Enum):
@@ -140,12 +117,11 @@ class CourseTerm(Enum):
     FULL_YEAR = 'Y'
 
 
-class Course(db.Model):
+class Course(db.Document):
     """A class representing a course.
     
     Instance Attributes:
-        id: A unique integer id representing this course.
-        organisation_id: The id of the organisation that this course is associated with.
+        id: The full code of the course.
         organisation: The Organisation that this course is associated with.
         code: The course code.
         title: The title of this course.
@@ -162,20 +138,19 @@ class Course(db.Model):
         web_timetable_instructions: Additional timetable information.
         delivery_instructions: Additional delivery instruction information.
     """
-    id: int = db.Column(db.Integer, primary_key=True)
-    organisation_id: int = db.Column(db.Integer, db.ForeignKey('organisation.id'))
-    organisation: Organisation = db.relationship('Organisation')
-    code: str = db.Column(db.String(32), index=True)
-    title: str = db.Column(db.Text)
-    description: str = db.Column(db.Text)
-    term: CourseTerm = db.Column(db.Enum(CourseTerm))
-    session: str = db.Column(db.String(5), index=True)
-    sections: List[Section] = db.relationship('Section', back_populates='course')
-    prerequisites: str = db.Column(db.Text)  # TODO: Parse this
-    corequisites: str = db.Column(db.Text)  # TODO: Parse this
-    exclusions: str = db.Column(db.Text)  # TODO: Parse this
-    recommended_preparation: str = db.Column(db.Text)
-    breadth_categories: str = db.Column(db.Text)  # TODO: Parse this
-    distribution_categories: str = db.Column(db.Text)  # TODO: Parse this
-    web_timetable_instructions: str = db.Column(db.Text)
-    delivery_instructions: str = db.Column(db.Text)
+    id: str = db.StringField(primary_key=True, unique=True, required=True)
+    organisation: Organisation = db.ReferenceField('Organisation')
+    code: str = db.StringField()
+    title: str = db.StringField()
+    description: str = db.StringField()
+    term: CourseTerm = db.EnumField(CourseTerm)
+    session: str = db.StringField(min_length=5, max_length=5)
+    sections: List[Section] = db.ListField(db.ReferenceField('Section'))
+    prerequisites: str = db.StringField()  # TODO: Parse this
+    corequisites: str = db.StringField()  # TODO: Parse this
+    exclusions: str = db.StringField()  # TODO: Parse this
+    recommended_preparation: str = db.StringField()
+    breadth_categories: str = db.StringField()  # TODO: Parse this
+    distribution_categories: str = db.StringField()  # TODO: Parse this
+    web_timetable_instructions: str = db.StringField()
+    delivery_instructions: str = db.StringField()
