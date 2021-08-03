@@ -3,8 +3,7 @@ flask
 flask-migrate
 flask-sqlalchemy
 # GraphQL
-graphene
-flask-graphql
+ariadne
 # Scheduler
 schedule
 # Misc

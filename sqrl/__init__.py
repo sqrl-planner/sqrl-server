@@ -27,9 +27,10 @@ def create_app(instance_config_filename: Union[str, Path] = 'local_config.py',
     extensions.init_app(app)
 
     # from sqrl import routes, models, cli
-    from sqrl import models, cli
+    from sqrl import models, cli, graphql
     # routes.init_app(app)
     cli.init_app(app)
+    graphql.init_app(app)
 
     # Register mimetypes
     mimetypes.add_type('text/css', '.css')
