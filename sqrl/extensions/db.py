@@ -1,4 +1,4 @@
-"""SQLAlchemy database extension."""
+"""MongoEngine database extension."""
 from flask import Flask
 from flask_mongoengine import MongoEngine
 
