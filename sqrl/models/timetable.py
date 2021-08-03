@@ -3,7 +3,6 @@ import datetime
 from enum import Enum
 from typing import List, Optional
 
-import mongoengine
 from sqrl.extensions import db
 
 
