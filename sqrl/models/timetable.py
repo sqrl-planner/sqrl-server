@@ -1,34 +1,9 @@
 """Model data classes for timetable."""
-import datetime
 from enum import Enum
+from datetime import datetime
 from typing import List, Optional
 
 from sqrl.extensions import db
-
-
-class Organisation(db.Document):
-    """
-    A class representing a department (which offers courses).
-
-    Instance Attributes:
-        code: A unique string representing this organisation.
-        name: The full name of this organisation.
-    """
-    code: str = db.StringField(primary_key=True)
-    name: str = db.StringField(required=True)
-
-
-class Instructor(db.Document):
-    """A class representing a course instructor.
-    
-    Instance Attributes:
-        id: A unique integer id representing this instructor as returned by the API.
-        first_name: The first name of this instructor.
-        last_name: The last name of this instructor.
-    """
-    id: int = db.IntField(primary_key=True, unique=True, required=True)
-    first_name: str = db.StringField(required=True)
-    last_name: str = db.StringField(required=True)
 
 
 class MeetingDay(Enum):
@@ -42,7 +17,7 @@ class MeetingDay(Enum):
     SUNDAY = 'SU'
 
 
-class SectionMeeting(db.Document):
+class SectionMeeting(db.EmbeddedDocument):
     """A class representing a meeting of a section.
 
     Instance Attributes:
@@ -55,8 +30,8 @@ class SectionMeeting(db.Document):
             if there is no second assigned room.
     """
     day: MeetingDay = db.EnumField(MeetingDay, required=True)
-    start_time: datetime.datetime = db.DateTimeField(required=True)
-    end_time: datetime.datetime = db.DateTimeField(required=True)
+    start_time: datetime = db.DateTimeField(required=True)
+    end_time: datetime = db.DateTimeField(required=True)
     assigned_room_1: Optional[str] = db.StringField(null=True)
     assigned_room_2: Optional[str] = db.StringField(null=True)
 
@@ -75,7 +50,20 @@ class SectionDeliveryMode(Enum):
     ONLINE_ASYNC = 'ONLASYNC'
 
 
-class Section(db.Document):
+class Instructor(db.Document):
+    """A class representing a course instructor.
+    
+    Instance Attributes:
+        id: A unique integer id representing this instructor as returned by the API.
+        first_name: The first name of this instructor.
+        last_name: The last name of this instructor.
+    """
+    id: int = db.IntField(primary_key=True, unique=True, required=True)
+    first_name: str = db.StringField(required=True)
+    last_name: str = db.StringField(required=True)
+
+
+class Section(db.EmbeddedDocument):
     """A class representing a course section/meeting.
     
     Instance Attributes:
@@ -99,7 +87,7 @@ class Section(db.Document):
     section_number: str = db.StringField()
     subtitle: Optional[str] = db.StringField(null=True)
     instructors: List[Instructor] = db.ListField(db.ReferenceField('Instructor'))
-    meetings: List[SectionMeeting] = db.ListField(db.ReferenceField('SectionMeeting'))
+    meetings: List[SectionMeeting] = db.EmbeddedDocumentListField('SectionMeeting')
     delivery_mode: SectionDeliveryMode = db.EnumField(SectionDeliveryMode)
     cancelled: bool = db.BooleanField()
     has_waitlist: bool = db.BooleanField()
@@ -115,6 +103,18 @@ class CourseTerm(Enum):
     SECOND_SEMESTER = 'S'
     FULL_YEAR = 'Y'
 
+
+class Organisation(db.Document):
+    """
+    A class representing a department (which offers courses).
+
+    Instance Attributes:
+        code: A unique string representing this organisation.
+        name: The full name of this organisation.
+    """
+    code: str = db.StringField(primary_key=True)
+    name: str = db.StringField(required=True)
+    
 
 class Course(db.Document):
     """A class representing a course.
@@ -144,7 +144,7 @@ class Course(db.Document):
     description: str = db.StringField()
     term: CourseTerm = db.EnumField(CourseTerm)
     session: str = db.StringField(min_length=5, max_length=5)
-    sections: List[Section] = db.ListField(db.ReferenceField('Section'))
+    sections: List[Section] = db.EmbeddedDocumentListField('Section')
     prerequisites: str = db.StringField()  # TODO: Parse this
     corequisites: str = db.StringField()  # TODO: Parse this
     exclusions: str = db.StringField()  # TODO: Parse this
