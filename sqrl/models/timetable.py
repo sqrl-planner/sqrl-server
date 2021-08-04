@@ -1,10 +1,9 @@
 """Model data classes for timetable."""
 from enum import Enum
-from datetime import datetime
 from typing import List, Optional
 
 from sqrl.extensions import db
-
+from sqrl.models.common import Time
 
 class MeetingDay(Enum):
     """A class representing the day of the week."""
@@ -30,8 +29,8 @@ class SectionMeeting(db.EmbeddedDocument):
             if there is no second assigned room.
     """
     day: MeetingDay = db.EnumField(MeetingDay, required=True)
-    start_time: datetime = db.DateTimeField(required=True)
-    end_time: datetime = db.DateTimeField(required=True)
+    start_time: Time = db.EmbeddedDocumentField(Time, required=True)
+    end_time: Time = db.EmbeddedDocumentField(Time, required=True)
     assigned_room_1: Optional[str] = db.StringField(null=True)
     assigned_room_2: Optional[str] = db.StringField(null=True)
 
@@ -58,7 +57,7 @@ class Instructor(db.Document):
         first_name: The first name of this instructor.
         last_name: The last name of this instructor.
     """
-    id: int = db.IntField(primary_key=True, unique=True, required=True)
+    id: int = db.IntField(primary_key=True)
     first_name: str = db.StringField(required=True)
     last_name: str = db.StringField(required=True)
 
@@ -77,21 +76,21 @@ class Section(db.EmbeddedDocument):
             mode.
         cancelled: Whether this section is cancelled.
         has_waitlist: Whether this section has a waitlist.
-        enrollment_capacity: The total number of students that can be enrolled in this section.
+        enrolment_capacity: The total number of students that can be enrolled in this section.
         actual_enrolment: The number of students enrolled in this section.
         actual_waitlist: The number of students waitlisted for this section.
-        enrollment_indicator: A string representing the enrollment indicator for this section,
+        enrolment_indicator: A string representing the enrollment indicator for this section,
             or None if there is no enrollment indicator.
     """
-    teaching_method: SectionTeachingMethod = db.EnumField(SectionTeachingMethod)
+    teaching_method: Optional[SectionTeachingMethod] = db.EnumField(SectionTeachingMethod, null=True)
     section_number: str = db.StringField()
     subtitle: Optional[str] = db.StringField(null=True)
     instructors: List[Instructor] = db.ListField(db.ReferenceField('Instructor'))
     meetings: List[SectionMeeting] = db.EmbeddedDocumentListField('SectionMeeting')
-    delivery_mode: SectionDeliveryMode = db.EnumField(SectionDeliveryMode)
+    delivery_mode: Optional[SectionDeliveryMode] = db.EnumField(SectionDeliveryMode, null=True)
     cancelled: bool = db.BooleanField()
     has_waitlist: bool = db.BooleanField()
-    enrollment_capacity: Optional[int] = db.IntField(null=True)
+    enrolment_capacity: Optional[int] = db.IntField(null=True)
     actual_enrolment: Optional[int] = db.IntField(null=True)
     actual_waitlist: Optional[int] = db.IntField(null=True)
     enrolment_indicator: Optional[str] = db.StringField(null=True)
@@ -102,6 +101,13 @@ class CourseTerm(Enum):
     FIRST_SEMESTER = 'F'
     SECOND_SEMESTER = 'S'
     FULL_YEAR = 'Y'
+
+
+class Campus(Enum):
+    """University campus"""
+    ST_GEORGE = 'UTSG'
+    SCARBOROUGH = 'UTSC'
+    MISSISSAUGA = 'UTM'    
 
 
 class Organisation(db.Document):
@@ -126,7 +132,8 @@ class Course(db.Document):
         title: The title of this course.
         description: The description of this course.
         term: The term in which the course takes place.
-        session: The session in which the course takes place.
+        session_code: The session in which the course takes place represented as a 5 character
+            numeric string.
         sections: A list of sections available for this course.
         prerequisites: Prerequisties for this course.
         corequisites: Corequisites for this course.
@@ -137,13 +144,13 @@ class Course(db.Document):
         web_timetable_instructions: Additional timetable information.
         delivery_instructions: Additional delivery instruction information.
     """
-    id: str = db.StringField(primary_key=True, unique=True, required=True)
+    id: str = db.StringField(primary_key=True)
     organisation: Organisation = db.ReferenceField('Organisation')
     code: str = db.StringField()
     title: str = db.StringField()
     description: str = db.StringField()
     term: CourseTerm = db.EnumField(CourseTerm)
-    session: str = db.StringField(min_length=5, max_length=5)
+    session_code: str = db.StringField(min_length=5, max_length=5)
     sections: List[Section] = db.EmbeddedDocumentListField('Section')
     prerequisites: str = db.StringField()  # TODO: Parse this
     corequisites: str = db.StringField()  # TODO: Parse this
@@ -153,3 +160,4 @@ class Course(db.Document):
     distribution_categories: str = db.StringField()  # TODO: Parse this
     web_timetable_instructions: str = db.StringField()
     delivery_instructions: str = db.StringField()
+    campus: Campus = db.EnumField(Campus, required=True)

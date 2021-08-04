@@ -1,8 +1,9 @@
 "A module containing dataset sources."
 import re
 import datetime
-from typing import Any, Optional
-from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from abc import ABC, abstractclassmethod, abstractmethod
+from typing import Any, Optional, Union
 
 import requests
 from bs4 import BeautifulSoup
@@ -22,12 +23,133 @@ class DatasetSource(ABC):
         self._db = db
 
     @abstractmethod
-    def pull_and_sync(self, *args: Any, **kwargs: Any) -> None:
+    def sync(self, *args: Any, **kwargs: Any) -> None:
         """Pull data from the source and sync it with the database."""
         raise NotImplementedError
 
 
-class UTSGTimetable(DatasetSource):
+@dataclass
+class TimetableSession:
+    """A class representing a session of a calendar year.
+    
+    Instance Attributes:
+        year: The year of the session.
+        summer: Whether this is a summer session. Defaults to False, meaning that this is a
+            fall/winter session.
+    """
+    year: int
+    summer: bool = False
+    
+    @property
+    def code(self) -> str:
+        """
+        Return the session code for this TimetableSession.
+        
+        The session code is a five-length string where the first four characters denote the session
+        year, and the last character denotes whether it is a fall/winter (9) or summer session (5).
+        For example, the code `20209` denotes the fall/winter session of 2020.
+
+        >>> TimetableSession(2020, summer=False).code
+        '20209'
+        >>> TimetableSession(1966, summer=True).code
+        '19665'
+        >>> TimetableSession(1, summer=False).code
+        00019
+        """
+        suffix = 5 if self.summer else 9
+        return f'{self.year.zfill(4)}{suffix}'
+
+    def __str__(self) -> str:
+        return self.code
+
+    @classmethod
+    def parse(cls, session_code: str) -> 'TimetableSession':
+        """Return an instance TimetableSession representing the given session code.
+        Raise a ValueError if the session code is not formatted properly.
+
+        >>> TimetableSession.parse('20205') == TimetableSession(2020, summer=True)
+        True
+        >>> TimetableSession.parse('20179') == TimetableSession(2017, summer=False)
+        True
+        """
+        if len(session_code) != 5:
+            raise ValueError(f'invalid session code ("{session_code}"): expected string of length 5'
+                             f', not {len(session_code)}')
+        elif not session_code.isnumeric():
+            raise ValueError(f'invalid session code ("{session_code}"): expected numeric string')
+        elif int(session_code[-1]) not in {9, 5}:
+            raise ValueError(f'invalid session code ("{session_code}"): expected code to end in '
+                             f'one of {{9, 5}}, not {session_code[-1]}')
+        else:
+            return TimetableSession(session_code[:4], session_code[-1] == 5)
+
+
+class TimetableDatasetSource(DatasetSource):
+    """A dataset source that contains information about course timetables.
+
+    Instance Attributes:
+        session_code: The session code. Defaults to None, meaning the latest (most up-to-date)
+            session is used.
+    """
+    session: Optional[TimetableSession]
+
+    def __init__(self, db: MongoEngine,
+                 session: Optional[Union[TimetableSession, str]] = None) -> None:
+        """Initialise an ArtsciTimetableAPI.
+        
+        Args:
+            session: An optional session that can be supplied instead of the default.
+                This can be an instance of TimetableSession or a string providing the session code.
+        """
+        super().__init__(db)
+        if isinstance(session, str):
+            self.session = TimetableSession.parse(session)
+        elif session is None:
+            self.session = self._get_latest_session()
+        else:
+            self.session = session
+
+    def sync(self) -> None:
+        """Pull course data from the Faculty of Arts and Science timetable API and sync it with
+        the database."""
+        # Sync courses
+        courses = self._get_all_courses()
+        for course in courses:
+            self._sync_course(course)
+
+    def _sync_course(self, course: models.Course) -> None:
+        """Sync a sqrl.models.Course object."""
+        # Sync sections
+        for section in course.sections:
+            self._sync_section(section)
+        # Sync organisation
+        course.organisation.save()
+        # Sync course
+        course.save()
+
+    def _sync_section(self, section: models.Section) -> None:
+        """Sync a sqrl.models.Section object."""
+        # Sync instructors
+        for instructor in section.instructors:
+            instructor.save()
+
+    @abstractmethod
+    def _get_all_courses(self) -> list[models.Course]:
+        """Return all the courses in the session as a list of sqrl.models.Course objects."""
+        raise NotImplementedError
+
+    @abstractclassmethod
+    def _get_latest_session(cls, verify: bool = False) -> TimetableSession:
+        """Return the most up-to-date session from the timetable data source.
+        Raise a ValueError if the session could not be found.
+        
+        Args:
+            verify: Whether to verify the session code against the timetable. 
+        """
+        raise NotImplementedError
+
+
+class UTSGTimetable(TimetableDatasetSource):
     """A dataset source implementation for the St. George campus Arts and Science timetable API.
     
     Class Attributes:
@@ -49,64 +171,139 @@ class UTSGTimetable(DatasetSource):
         # Emulate Gecko agent
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
     }
-    session_code: Optional[str]
+    # Private Instance Attributes
+    #   _organisations: A dict mapping the code of each organisation in the Faculty of Arts
+    #       and Science to its model object.
+    _organisations: dict[str, models.Organisation]
 
-    def __init__(self, db: MongoEngine, session_code: Optional[str] = None) -> None:
-        """Initialise an ArtsciTimetableAPI.
-        
-        Args:
-            session_code: An optional session code that can be supplied instead of the default.
-        """
-        super().__init__(db)
-        if session_code is None:
-            self.session_code = self._get_session_code()
-        else:
-            self.session_code = session_code
+    def __init__(self, db: MongoEngine,
+                 session: Optional[Union[TimetableSession, str]] = None) -> None:
+        super().__init__(db, session=session)
+        self._organisations = {organisation.code: organisation
+                               for organisation in self._get_all_organisations()}
 
-    def pull_and_sync(self) -> None:
-        """Pull course data from the Faculty of Arts and Science timetable API, convert it to
-        sqrl.models objects, and sync it with the database."""
-        for course_data in self._get_all_courses().values():
-            self._sync_course(course_data)
+    def _get_all_courses(self) -> list[models.Course]:
+        """Return all the courses in the session as a list of sqrl.models.Course objects."""
+        # Get courses for each department
+        courses = []
+        for organisation_code in self._organisations.keys():
+            courses.extend(self._get_courses_in_organsisation(organisation_code))
+        return courses
 
-        self._db.session.commit()
-        
-    def _get_all_courses(self) -> dict[str, dict]:
-        """Return all the courses in the session as a dict mappng each course code its json data."""
-        organisations = self._get_organisations()
-        return {
-            name: data for organisation_code in organisations
-            for name, data in self._get_courses_in_organsisation(organisation_code).items()
-        }
-
-    def _get_courses_in_organsisation(self, organisation_code: str) -> dict[str, dict]:
-        """Return all the courses belonging to the specified organisation as a dict mapping each course
-        code to its json data.
+    def _get_courses_in_organsisation(self, organisation_code: str) -> list[models.Course]:
+        """Return all the courses belonging to the given organisation as a list of
+        sqrl.models.Course objects
 
         Args:
             organisation_code: The code of the organisation.
         """
-        endpoint_url = f'{self.API_URL}/{self.session_code}/courses?org={organisation_code}'
-        return requests.get(endpoint_url).json() or {}
+        endpoint_url = f'{self.API_URL}/{self.session.code}/courses?org={organisation_code}'
+        courses_dict = requests.get(endpoint_url).json() or {}
+        return [self._parse_course(payload) for payload in courses_dict.values()]
+
+    def _parse_course(self, payload: dict) -> models.Course:
+        """Return an instance of sqrl.models.Course representing the course given by the payload."""
+        # Full code is in the format <code>-<term>-<session>. For example, MAT137Y1-F-20219
+        full_code = '{}-{}-{}'.format(payload['code'], payload['section'], payload['session'])
+        return models.Course(
+            id=full_code,
+            organisation=self._organisations[payload['org']],
+            code=payload['code'],
+            title=payload['courseTitle'],
+            description=payload['courseDescription'],
+            term=models.CourseTerm(payload['section']),
+            session_code=payload['session'],
+            sections=[self._parse_section(x) for x in payload['meetings'].values()],
+            prerequisites=payload['prerequisite'],
+            corequisites=payload['corequisite'],
+            exclusions=payload['exclusion'],
+            recommended_preparation=payload['recommendedPreparation'],
+            breadth_categories=payload['breadthCategories'],
+            distribution_categories=payload['distributionCategories'],
+            web_timetable_instructions=payload['webTimetableInstructions'],
+            delivery_instructions=payload['deliveryInstructions'],
+            campus=models.Campus.ST_GEORGE
+        )
+
+    def _parse_section(self, payload: dict) -> models.Section:
+        """Return an instance of sqrl.models.Section representing the given payload."""
+        # Parse instructors
+        if (instructors := payload.get('instructors', [])) == []:
+            # Replace empty list with empty dict for consistency
+            instructors = {}
+        instructors = [self._parse_instructor(x) for x in instructors.values()]
+        # Parse meetings
+        if (schedule := payload.get('schedule', [])) == []:
+            # Replace empty list with empty dict for consistency
+            schedule = {}
+        meetings = self._parse_schedule(schedule)
+        # Construct section object
+        return models.Section(
+            teaching_method=nullable_convert(payload.get('teachingMethod', None),
+                                             models.SectionTeachingMethod),
+            section_number=payload['sectionNumber'],
+            subtitle=payload['subtitle'],
+            instructors=instructors,
+            meetings=meetings,
+            delivery_mode=nullable_convert(payload.get('deliveryMode', None),
+                                           models.SectionDeliveryMode),
+            cancelled=payload.get('cancel', None) == 'Cancelled',
+            has_waitlist=payload.get('waitlist', None) == 'Y',
+            enrolment_capacity=int_or_none(payload.get('enrollmentCapacity', None)),
+            actual_enrolment=int_or_none(payload.get('actualEnrolment', None)),
+            actual_waitlist=int_or_none(payload.get('actualWaitlist', None)),
+            enrolment_indicator=payload.get('enrollmentIndicator', None)
+        )
+
+    def _parse_instructor(self, payload: dict) -> models.Instructor:
+        """Return an instance of sqrl.models.Instructor representing the given payload."""
+        return models.Instructor(
+            id=int(payload['instructorId']),
+            first_name=payload['firstName'],
+            last_name=payload['lastName']
+        )
+
+    def _parse_schedule(self, payload: dict) -> list[models.SectionMeeting]:
+        """Return a list of sqrl.models.SectionMeeting objects representing the given course
+        meeting schedule payload.
+        """
+        meetings = []
+        for meeting_data in payload.values():
+            day = meeting_data.get('meetingDay', None)
+            start_time = meeting_data.get('meetingStartTime', None)
+            end_time = meeting_data.get('meetingEndTime', None)
+
+            # Ignore meetings with a missing start/end time or day.
+            if day is None or start_time is None or end_time is None:
+                # NOTE: We should probably log this!
+                continue
+
+            meetings.append(models.SectionMeeting(
+                day=models.MeetingDay(day),
+                start_time=self._convert_time(start_time),
+                end_time=self._convert_time(end_time),
+                assigned_room_1=meeting_data.get('assignedRoom1', None),
+                assigned_room_2=meeting_data.get('assignedRoom2', None)
+            ))
+        return meetings
 
     @classmethod
-    def _get_organisations(cls) -> dict[str, str]:
-        """Return a dict mapping the code of all the organisations at UofT to its name.
-        Raise a ValueError if the organisations could not be retrieved.
+    def _get_all_organisations(cls) -> list[models.Organisation]:
+        """Return a list of all the course departments in the Faculty of Arts and Science as a list
+        of sqrl.models.Organisation objects. Raise a ValueError if the organisations could not be
+        retrieved. Note that this does NOT mutate the database.
         """
         data = requests.get(f'{cls.API_URL}/orgs').json()
         if 'orgs' not in data:
-            raise ValueError('could not get organisations! "orgs" key not found in response payload.')
+            raise ValueError('could not get organisations: "orgs" key not found in response payload.')
         else:
-            return data['orgs']
+            return [models.Organisation(code=code, name=name)
+                    for code, name in data['orgs'].items()]
 
     @classmethod
-    def _get_session_code(cls, verify: bool = False) -> str:
-        """Return the current session code. Raise a ValueError if the session could not be found.
-        
-        The session code is a five-length string where the first four characters denote the session
-        year, and the last character denotes whether it is a fall/winter (9) or summer session (5).
-        For example, the code `20209` denotes the fall/winter session of 2020.
+    def _get_latest_session(cls, verify: bool = False) -> TimetableSession:
+        """Return the session for the latest version of the Arts and Science timetable.
+        Raise a ValueError if the session could not be found.
 
         Args:
             verify: Whether to verify the session code against the API. 
@@ -126,7 +323,7 @@ class UTSGTimetable(DatasetSource):
         if verify and not cls._is_session_code_valid(session_code):
             raise ValueError('failed to find session code!')
         
-        return session_code
+        return TimetableSession.parse(session_code)
 
     @classmethod
     def _is_session_code_valid(cls, session_code: str) -> bool:
@@ -139,164 +336,18 @@ class UTSGTimetable(DatasetSource):
         data = requests.get(f'{cls.API_URL}/{session_code}/courses?code={SEARCH_COURSE}').json()
         return len(data) > 0
 
-    def _sync_course(self, course_data: dict) -> models.Course:
-        """Add or update a course given a dict containing json course data in the format given by
-        the timetable API."""
-        course_id = int(course_data['courseId'])
-        course = models.Course.query.filter_by(id=course_id).first()
-        if course is None:
-            # Create course object
-            course = models.Course(id=course_id)
-            self._db.session.add(course)
-
-        # Update course attributes
-        course.organisation = self._sync_organisation(course_data['org'], course_data['orgName'])
-        course.code = course_data['code']
-        course.title = course_data['courseTitle']
-        course.description = course_data['courseDescription']
-        course.term = models.CourseTerm(course_data['section'])
-        course.session = course_data['session']
-        course.sections = [
-            self._sync_section(section) for section in course_data['meetings'].values()
-        ]
-        course.prerequisites = course_data['prerequisite']
-        course.corequisites = course_data['corequisite']
-        course.exclusions = course_data['exclusion']
-        course.recommended_preparation = course_data['recommendedPreparation']
-        course.breadth_categories = course_data['breadthCategories']
-        course.distribution_categories = course_data['distributionCategories']
-        course.web_timetable_instructions = course_data['webTimetableInstructions']
-        course.delivery_instructions = course_data['deliveryInstructions']
-        
-        self._db.session.flush()
-        return course
-
-    def _sync_organisation(self, code: str, name: str) -> models.Organisation:
-        """Add or update an organisation given its code and name in the database. Return a
-        sqrl.models.Organisation object."""
-        organisation = models.Organisation.query.filter_by(code=code).first()
-        if organisation is None:
-            organisation = models.Organisation(code=code)
-            self._db.session.add(organisation)
-
-        organisation.name = name
-        self._db.session.flush()
-        return organisation
-
-    def _sync_section(self, section_data: dict) -> models.Section:
-        """Add or update a course section given a dict containing json course data in the format
-        given by the timetable API."""
-        section_id = int(section_data['meetingId'])
-        section = models.Section.query.filter_by(id=section_id).first()
-        if section is None:
-            section = models.Section(id=section_id)
-            self._db.session.add(section)
-
-        section.teaching_method = nullable_convert(
-            section_data.get('teachingMethod', None),
-            models.SectionTeachingMethod.__init__
-        )    
-        section.section_number = section_data['sectionNumber']
-        section.subtitle = section_data['subtitle']
-
-        if (instructors := section_data.get('instructors', [])) == []:
-            # Replace empty list with empty dict for consistency
-            instructors = {}
-        section.instructors = [
-            self._sync_instructor(instructor_data)
-            for instructor_data in instructors.values()
-        ]
-
-        if (schedule := section_data.get('schedule', [])) == []:
-            # Replace empty list with empty dict for consistency
-            schedule = {}
-        section.meetings = self._sync_section_meetings(schedule)
-
-        section.delivery_mode = nullable_convert(
-            section_data.get('deliveryMode', None),
-            models.SectionDeliveryMode.__init__
-        )
-        section.online = section_data.get('online', None)
-        section.cancelled = section_data.get('cancel', None) == 'Cancelled'
-
-        section.has_waitlist = section_data.get('waitlist', None) == 'Y'
-        section.enrolment_capacity = int_or_none(section_data.get('enrollmentCapacity', None))
-        section.actual_enrolment = int_or_none(section_data.get('actualEnrolment', None))
-        section.actual_waitlist = int_or_none(section_data.get('actualWaitlist', None))
-        section.enrollmentIndicator = section_data.get('enrollmentIndicator', None)
-
-        self._db.session.flush()
-        return section
-
-    def _sync_instructor(self, instructor_data: dict) -> models.Instructor:
-        """Add or update a course instructor given a dict containing json instructor data in the
-        format given by the timetable API."""
-        instructor_id = int(instructor_data['instructorId'])
-        instructor = models.Instructor.query.filter_by(
-            id=instructor_id
-        ).first()
-
-        if instructor is None:
-            instructor = models.Instructor(id=instructor_id)
-            self._db.session.add(instructor)
-
-        instructor.first_name = instructor_data['firstName']
-        instructor.last_name = instructor_data['lastName']
-
-        self._db.session.flush()
-        return instructor
-
-    def _sync_section_meetings(self, section_meetings_data: dict) -> list[models.SectionMeeting]:
-        """Add or update a course section meeting given a dict containing section meetings
-        in the format given by the timetable API."""
-        meetings = []
-        for meeting_data in section_meetings_data.values():
-            day = meeting_data.get('meetingDay', None)
-            start_time = meeting_data.get('meetingStartTime', None)
-            end_time = meeting_data.get('meetingEndTime', None)
-
-            # Ignore meetings with a missing start/end time or day.
-            if day is None or start_time is None or end_time is None:
-                # NOTE: We should probably log this!
-                continue
-
-            meeting_id = int(meeting_data['meetingScheduleId'])
-            meeting = models.SectionMeeting.query.filter_by(
-                id=meeting_id
-            ).first()
-            if meeting is None:
-                meeting = models.SectionMeeting(
-                    id=meeting_id,
-                    day=models.MeetingDay(day),
-                    start_time=self._convert_time(start_time),
-                    end_time=self._convert_time(end_time),
-                    assigned_room_1=meeting_data.get('assignedRoom1', None),
-                    assigned_room_2=meeting_data.get('assignedRoom2', None)
-                )
-                self._db.session.add(meeting)
-            else:
-                meeting.day = models.MeetingDay(day)
-                meeting.start_time = self._convert_time(start_time)
-                meeting.end_time = self._convert_time(end_time)
-                meeting.assigned_room_1 = meeting_data.get('assignedRoom1', None)
-                meeting.assigned_room_2 = meeting_data.get('assignedRoom2', None)
-
-            self._db.session.flush()
-            meetings.append(meeting)
-        return meetings
-
     @staticmethod
-    def _convert_time(time: str) -> datetime.time:
+    def _convert_time(time: str) -> models.Time:
         """Convert a length-5 time string in the format HH:MM using a 24-hour clock to a
-        datetime.time object.
+        sqrl.models.Time object.
 
-        >>> result = datetime.time(hour=8, minute=30)
-        >>> result == convert_time("08:30")
+        >>> time = convert_time("08:30")
+        >>> time.hour == 8 and time.minute == 30
         True
-        >>> result = datetime.time(hour=11, minute=0)
-        >>> result == convert_time("11:00")
+        >>> time = convert_time("11:00")
+        >>> time.hour == 11 and time.minute == 0
         True
         """
         # Parts is a list consisting of two elements: hours and minutes.
         parts = [int(part) for part in time.split(':')]
-        return datetime.time(parts[0], parts[1])
+        return models.Time(hour=parts[0], minute=parts[1])
