@@ -49,7 +49,7 @@ class SectionDeliveryMode(Enum):
     ONLINE_ASYNC = 'ONLASYNC'
 
 
-class Instructor(db.Document):
+class Instructor(db.EmbeddedDocument):
     """A class representing a course instructor.
     
     Instance Attributes:
@@ -57,7 +57,6 @@ class Instructor(db.Document):
         first_name: The first name of this instructor.
         last_name: The last name of this instructor.
     """
-    id: int = db.IntField(primary_key=True)
     first_name: str = db.StringField(required=True)
     last_name: str = db.StringField(required=True)
 
@@ -85,7 +84,7 @@ class Section(db.EmbeddedDocument):
     teaching_method: Optional[SectionTeachingMethod] = db.EnumField(SectionTeachingMethod, null=True)
     section_number: str = db.StringField()
     subtitle: Optional[str] = db.StringField(null=True)
-    instructors: List[Instructor] = db.ListField(db.ReferenceField('Instructor'))
+    instructors: List[Instructor] = db.EmbeddedDocumentListField('Instructor')
     meetings: List[SectionMeeting] = db.EmbeddedDocumentListField('SectionMeeting')
     delivery_mode: Optional[SectionDeliveryMode] = db.EnumField(SectionDeliveryMode, null=True)
     cancelled: bool = db.BooleanField()

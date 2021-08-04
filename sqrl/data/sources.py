@@ -129,9 +129,8 @@ class TimetableDatasetSource(DatasetSource):
 
     def _sync_section(self, section: models.Section) -> None:
         """Sync a sqrl.models.Section object."""
-        # Sync instructors
-        for instructor in section.instructors:
-            instructor.save()
+        # Nothing to do here!
+        ...
 
     @abstractmethod
     def _get_all_courses(self) -> list[models.Course]:
@@ -258,7 +257,6 @@ class UTSGTimetable(TimetableDatasetSource):
     def _parse_instructor(self, payload: dict) -> models.Instructor:
         """Return an instance of sqrl.models.Instructor representing the given payload."""
         return models.Instructor(
-            id=int(payload['instructorId']),
             first_name=payload['firstName'],
             last_name=payload['lastName']
         )
