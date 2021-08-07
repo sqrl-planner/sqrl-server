@@ -4,9 +4,9 @@ flask
 flask-mongoengine
 # GraphQL
 graphql-server[flask]
-graphene-mongo
-flask_graphql
-graphql_core<3.0
+graphene
+git+https://github.com/graphql-python/graphene-mongo.git@9e79a53e711ec8fb43868d908a1fbd3987420f0c
+graphql_core
 # Scheduler
 schedule
 # Scraping

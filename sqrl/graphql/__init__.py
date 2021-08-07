@@ -1,6 +1,5 @@
 from flask import Flask
-from flask_graphql import GraphQLView
-
+from graphql_server.flask import GraphQLView
 from sqrl.graphql.schema import schema
 
 
@@ -10,7 +9,7 @@ def init_app(app: Flask) -> None:
         '/graphql',
         view_func=GraphQLView.as_view(
             'graphql',
-            schema=schema,
+            schema=schema.graphql_schema,
             graphiql=True
         )
     )

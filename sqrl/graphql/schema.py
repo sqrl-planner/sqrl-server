@@ -2,8 +2,39 @@ from typing import Any
 import graphene
 from graphene_mongo import MongoengineObjectType
 
-from sqrl.models import Organisation, Course
+from sqrl.models.common import Time
+from sqrl.models.timetable import (
+    SectionMeeting,
+    Instructor,
+    Section,
+    Organisation,
+    Course
+)
     
+
+class _TimeObject(MongoengineObjectType):
+    """A time object in the graphql schema."""
+    class Meta:
+        model = Time
+
+
+class _SectionMeetingObject(MongoengineObjectType):
+    """A section meeting in the graphql schema."""
+    class Meta:
+        model = SectionMeeting
+
+
+class _InstructorObject(MongoengineObjectType):
+    """An instructor in the graphql schema."""
+    class Meta:
+        model = Instructor
+
+
+class _SectionObject(MongoengineObjectType):
+    """A section in the graphql schema."""
+    class Meta:
+        model = Section
+
 
 class _OrganisationObject(MongoengineObjectType):
     """An organisation in the graphql schema."""
