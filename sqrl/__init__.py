@@ -21,10 +21,9 @@ def create_app(instance_config_filename: Union[str, Path] = 'local_config.py',
     except OSError:
         pass
 
-    # from sqrl import routes, models, cli
-    from sqrl import extensions, models, cli
+    from sqrl import extensions, models, cli, graphql
     extensions.init_app(app)
-    # routes.init_app(app)
+    graphql.init_app(app)
     cli.init_app(app)
 
     # Register mimetypes

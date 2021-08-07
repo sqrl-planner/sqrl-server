@@ -3,8 +3,15 @@ flask
 # MongoDB
 flask-mongoengine
 # GraphQL
-ariadne
+graphql-server[flask]
+graphene-mongo
+flask_graphql
+graphql_core<3.0
 # Scheduler
 schedule
+# Scraping
+requests
+bs4
 # Misc
 tqdm
+python-dotenv
