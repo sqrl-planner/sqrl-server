@@ -63,13 +63,13 @@ class _CourseObjectConnection(graphene.relay.Connection):
 
 class Query(graphene.ObjectType):
     """A query in the graphql schema."""
-    organisation = graphene.Field(_OrganisationObject, code=graphene.String())
+    organisationByCode = graphene.Field(_OrganisationObject, code=graphene.String())
     organisations = graphene.ConnectionField(_OrganisationObjectConnection)
 
-    course = graphene.Field(_CourseObject, id=graphene.String())
+    courseById = graphene.Field(_CourseObject, id=graphene.String())
     courses = graphene.ConnectionField(_CourseObjectConnection)
 
-    def resolve_organisation(self, info: Any, code: str) -> Organisation:
+    def resolve_organisation_by_code(self, info: Any, code: str) -> Organisation:
         """Return an _OrganisationObject object with the given code."""
         return Organisation.objects.get(code=code)
 
@@ -77,7 +77,7 @@ class Query(graphene.ObjectType):
         """Return a list of _OrganisationObject objects."""
         return list(Organisation.objects.all())
 
-    def resolve_course(self, info: Any, id: str) -> Course:
+    def resolve_course_by_id(self, info: Any, id: str) -> Course:
         """Return a _CourseObject object with the given id."""
         return Course.objects.get(id=id)
 
