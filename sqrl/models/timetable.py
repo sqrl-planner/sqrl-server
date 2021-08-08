@@ -160,3 +160,10 @@ class Course(db.Document):
     web_timetable_instructions: str = db.StringField()
     delivery_instructions: str = db.StringField()
     campus: Campus = db.EnumField(Campus, required=True)
+
+    meta = {'indexes': [
+        {'fields': ['$code', '$title', '$description'],
+         'default_language': 'english',
+         'weights': {'code': 2, 'title': 1.5, 'description': 1}
+        }
+    ]}
