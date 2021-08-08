@@ -63,11 +63,15 @@ class _CourseObjectConnection(graphene.relay.Connection):
 
 class Query(graphene.ObjectType):
     """A query in the graphql schema."""
-    organisationByCode = graphene.Field(_OrganisationObject, code=graphene.String())
+    organisation_by_code = graphene.Field(_OrganisationObject, code=graphene.String(required=True))
     organisations = graphene.ConnectionField(_OrganisationObjectConnection)
 
-    courseById = graphene.Field(_CourseObject, id=graphene.String())
+    course_by_id = graphene.Field(_CourseObject, id=graphene.String(required=True))
     courses = graphene.ConnectionField(_CourseObjectConnection)
+    search_courses = graphene.List(_CourseObject,
+                                   query=graphene.String(required=True),
+                                   offset=graphene.Int(required=False, default_value=0),
+                                   limit=graphene.Int(required=False, default_value=25))
 
     def resolve_organisation_by_code(self, info: Any, code: str) -> Organisation:
         """Return an _OrganisationObject object with the given code."""
@@ -85,5 +89,9 @@ class Query(graphene.ObjectType):
         """Return a list of _CourseObject objects."""
         return list(Course.objects.all())
 
+    def resolve_search_courses(self, info: Any, query: str, offset: int, limit: int) \
+            -> list[Course]:
+        """Return a list of _CourseObject objects matching the given search string."""
+        return list(Course.objects[offset:offset+limit])
 
 schema = graphene.Schema(query=Query)
