@@ -1,6 +1,8 @@
-from typing import Any, Optional
+import re
+from typing import Any
 
 import graphene
+from mongoengine.queryset.visitor import Q
 from graphene_mongo import MongoengineObjectType
 
 from sqrl.models.common import Time
@@ -92,6 +94,18 @@ class Query(graphene.ObjectType):
     def resolve_search_courses(self, info: Any, query: str, offset: int, limit: int) \
             -> list[Course]:
         """Return a list of _CourseObject objects matching the given search string."""
-        return list(Course.objects[offset:offset+limit])
+        courses_code = Course.objects(code__icontains=query)
+        # First n search results
+        n = courses_code.count()
+        if offset < n:
+            courses = list(courses_code[offset:offset + limit])
+            if limit > n - offset:
+                courses_text = Course.objects.search_text(query).order_by('$text_score')
+                courses += list(courses_text.limit(limit - n + offset))
+            return courses
+        else:
+            courses = Course.objects.search_text(query).order_by('$text_score')
+            offset -= n
+            return list(courses[offset:offset + limit])
 
 schema = graphene.Schema(query=Query)

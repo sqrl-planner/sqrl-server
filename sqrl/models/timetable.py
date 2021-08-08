@@ -162,8 +162,8 @@ class Course(db.Document):
     campus: Campus = db.EnumField(Campus, required=True)
 
     meta = {'indexes': [
-        {'fields': ['$code', '$title', '$description'],
+        {'fields': ['$title', '$description'],
          'default_language': 'english',
-         'weights': {'code': 2, 'title': 1.5, 'description': 1}
+         'weights': {'title': 1.5, 'description': 1}
         }
     ]}
