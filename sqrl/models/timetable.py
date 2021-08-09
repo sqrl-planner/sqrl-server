@@ -1,8 +1,7 @@
 """Model data classes for timetable."""
 import secrets
 from enum import Enum
-from typing import List, Optional
-
+from typing import Optional
 import petname
 
 from sqrl.extensions import db
@@ -88,8 +87,8 @@ class Section(db.EmbeddedDocument):
     teaching_method: Optional[SectionTeachingMethod] = db.EnumField(SectionTeachingMethod, null=True)
     section_number: str = db.StringField()
     subtitle: Optional[str] = db.StringField(null=True)
-    instructors: List[Instructor] = db.EmbeddedDocumentListField('Instructor')
-    meetings: List[SectionMeeting] = db.EmbeddedDocumentListField('SectionMeeting')
+    instructors: list[Instructor] = db.EmbeddedDocumentListField('Instructor')
+    meetings: list[SectionMeeting] = db.EmbeddedDocumentListField('SectionMeeting')
     delivery_mode: Optional[SectionDeliveryMode] = db.EnumField(SectionDeliveryMode, null=True)
     cancelled: bool = db.BooleanField()
     has_waitlist: bool = db.BooleanField()
@@ -97,6 +96,13 @@ class Section(db.EmbeddedDocument):
     actual_enrolment: Optional[int] = db.IntField(null=True)
     actual_waitlist: Optional[int] = db.IntField(null=True)
     enrolment_indicator: Optional[str] = db.StringField(null=True)
+
+    @property
+    def code(self) -> str:
+        """Return a string representing the code of this section. This is a combination of the
+        teaching method and the section number, separated by a hyphen.
+        """
+        return f'{self.teaching_method.value}-{self.section_number}' 
 
 
 class CourseTerm(Enum):
@@ -154,7 +160,8 @@ class Course(db.Document):
     description: str = db.StringField()
     term: CourseTerm = db.EnumField(CourseTerm)
     session_code: str = db.StringField(min_length=5, max_length=5)
-    sections: List[Section] = db.EmbeddedDocumentListField('Section')
+    sections: dict[str, Section] = db.MapField(db.EmbeddedDocumentField('Section'),
+                                               default=dict)
     prerequisites: str = db.StringField()  # TODO: Parse this
     corequisites: str = db.StringField()  # TODO: Parse this
     exclusions: str = db.StringField()  # TODO: Parse this
@@ -187,5 +194,4 @@ class Timetable(db.Document):
     """
     name: str = db.StringField(default=_generate_timetable_name)
     key: str = db.StringField(required=True, default=secrets.token_urlsafe)
-    meetings: dict[SectionMeeting] = db.MapField(db.EmbeddedDocumentListField(SectionMeeting),
-                                                 default=dict)
+    sections: dict[str, list[str]] = db.MapField(db.ListField(db.StringField()), default=dict)
