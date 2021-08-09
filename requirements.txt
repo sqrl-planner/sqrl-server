@@ -1,6 +1,6 @@
 # Flask
 flask
-# MongoDB
+flask-cors
 flask-mongoengine
 # GraphQL
 graphql-server[flask]
