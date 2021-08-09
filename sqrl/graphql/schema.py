@@ -181,7 +181,7 @@ class AddSectionsTimetableMutation(graphene.Mutation):
 
     def mutate(self, info: graphene.ResolveInfo, id: str, key: str, course_id: str,
                sections: list[str]) -> 'AddSectionsTimetableMutation':
-        """Add a meeting to a timetable."""
+        """Add sections to a timetable."""
         timetable = Timetable.objects.get(id=id)
         if timetable is None:
             raise Exception(f'could not find timetable with id "{id}"')
@@ -206,11 +206,65 @@ class AddSectionsTimetableMutation(graphene.Mutation):
         return AddSectionsTimetableMutation(timetable=timetable)
 
 
+class SetSectionsTimetableMutation(graphene.Mutation):
+    """Set sections in timetable mutation in the graphql schema."""
+    class Arguments:
+        id = graphene.ID(required=True)
+        key = graphene.String(required=True)
+        course_id = graphene.String(required=True)
+        sections = graphene.List(graphene.String, required=True)
+
+    timetable = graphene.Field(_TimetableObject)
+
+    def mutate(self, info: graphene.ResolveInfo, id: str, key: str, course_id: str,
+               sections: list[str]) -> 'SetSectionsTimetableMutation':
+        """Set sections in a timetable. If a section of the same type for the given course exists
+        in the timetable, then it is removed and replaced with the new one.
+        """
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception(f'could not find timetable with id "{id}"')
+        
+        if timetable.key != key:
+            raise Exception(f'the provided timetable key did not match')
+        
+        course = Course.objects.get(id=course_id)
+        if course is None:
+            raise Exception(f'could not find course with id "{course_id}"')
+        
+        if course_id not in timetable.sections:
+            timetable.sections[course_id] = []
+        
+        teaching_methods_to_remove = set()
+        for section_code in sections:
+            if section_code not in course.section_codes:
+                raise Exception(f'could not find section with code "{section_code}"')
+            else:
+                teaching_methods_to_remove.add(section_code.split('-')[0])
+        
+        # Clean old sections
+        old_sections = timetable.sections[course_id]
+        for i in range(len(old_sections) - 1, -1, -1):
+            # Extract teaching method and check if it needs to be removed
+            old_teaching_method = old_sections[i].split('-')[0]
+            if old_teaching_method in teaching_methods_to_remove:
+                # Remove old section from timetable since it is the same type as a new one
+                timetable.sections[course_id].pop(i)
+
+        # Add new sections
+        for section_code in sections:
+            timetable.sections[course_id].append(section_code)
+        
+        timetable.save()
+        return SetSectionsTimetableMutation(timetable=timetable)
+                
+
 class Mutation(graphene.ObjectType):
     """Mutations in the graphql schema."""
     create_timetable = CreateTimetableMutation.Field()
     delete_timetable = DeleteTimetableMutation.Field()
     add_sections_timetable = AddSectionsTimetableMutation.Field()
+    set_sections_timetable = SetSectionsTimetableMutation.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
