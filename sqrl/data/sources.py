@@ -204,11 +204,6 @@ class UTSGTimetable(TimetableDatasetSource):
         """Return an instance of sqrl.models.Course representing the course given by the payload."""
         # Full code is in the format <code>-<term>-<session>. For example, MAT137Y1-F-20219
         full_code = '{}-{}-{}'.format(payload['code'], payload['section'], payload['session'])
-        sections = {}
-        for section_payload in payload['meetings'].values():
-            section = self._parse_section(section_payload)
-            sections[section.code] = section
-        
         return models.Course(
             id=full_code,
             organisation=self._organisations[payload['org']],
@@ -217,7 +212,7 @@ class UTSGTimetable(TimetableDatasetSource):
             description=payload['courseDescription'],
             term=models.CourseTerm(payload['section']),
             session_code=payload['session'],
-            sections=sections,
+            sections=[self._parse_section(x) for x in payload['meetings'].values()],
             prerequisites=payload['prerequisite'],
             corequisites=payload['corequisite'],
             exclusions=payload['exclusion'],

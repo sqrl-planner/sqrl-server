@@ -39,6 +39,12 @@ class _SectionObject(MongoengineObjectType):
     class Meta:
         model = Section
 
+    code = graphene.String()
+
+    def resolve_code(self, info: graphene.ResolveInfo, **kwargs: Any) -> str:
+        """Resolve the code of the section."""
+        return self.code
+
 
 class _OrganisationObject(MongoengineObjectType):
     """An organisation in the graphql schema."""
@@ -68,6 +74,7 @@ class _TimetableObject(MongoengineObjectType):
     """A timetable in the graphql schema."""
     class Meta:
         model = Timetable
+        exclude_fields = ('key',)
 
 
 class Query(graphene.ObjectType):
@@ -82,23 +89,25 @@ class Query(graphene.ObjectType):
                                    offset=graphene.Int(required=False, default_value=0),
                                    limit=graphene.Int(required=False, default_value=25))
 
-    def resolve_organisation_by_code(self, info: Any, code: str) -> Organisation:
+    timetable_by_id = graphene.Field(_TimetableObject, id=graphene.ID(required=True))
+
+    def resolve_organisation_by_code(self, info: graphene.ResolveInfo, code: str) -> Organisation:
         """Return an _OrganisationObject object with the given code."""
         return Organisation.objects.get(code=code)
 
-    def resolve_organisations(self, info: Any, **kwargs: Any) -> list[Organisation]:
+    def resolve_organisations(self, info: graphene.ResolveInfo, **kwargs: Any) -> list[Organisation]:
         """Return a list of _OrganisationObject objects."""
         return list(Organisation.objects.all())
 
-    def resolve_course_by_id(self, info: Any, id: str) -> Course:
+    def resolve_course_by_id(self, info: graphene.ResolveInfo, id: str) -> Course:
         """Return a _CourseObject object with the given id."""
         return Course.objects.get(id=id)
 
-    def resolve_courses(self, info: Any, **kwargs: Any) -> list[Course]:
+    def resolve_courses(self, info: graphene.ResolveInfo, **kwargs: Any) -> list[Course]:
         """Return a list of _CourseObject objects."""
         return list(Course.objects.all())
 
-    def resolve_search_courses(self, info: Any, query: str, offset: int, limit: int) \
+    def resolve_search_courses(self, info: graphene.ResolveInfo, query: str, offset: int, limit: int) \
             -> list[Course]:
         """Return a list of _CourseObject objects matching the given search string."""
         courses_code = Course.objects(code__icontains=query)
@@ -115,6 +124,10 @@ class Query(graphene.ObjectType):
             offset -= n
             return list(courses[offset:offset + limit])
 
+    def resolve_timetable_by_id(self, info: graphene.ResolveInfo, id: str) -> Timetable:
+        """Return a _TimetableObject object with the given id."""
+        return Timetable.objects.get(id=id)
+
 
 class CreateTimetableMutation(graphene.Mutation):
     """Create timetable mutation in the graphql schema."""
@@ -123,24 +136,60 @@ class CreateTimetableMutation(graphene.Mutation):
     
     ok = graphene.Boolean()
     timetable = graphene.Field(_TimetableObject)
+    key = graphene.String()
 
-    def mutate(self, info: Any, name: Optional[str] = None) -> 'CreateTimetableMutation':
+    def mutate(self, info: graphene.ResolveInfo, name: Optional[str] = None) -> 'CreateTimetableMutation':
         """Create a timetable."""
         timetable = Timetable()
         if name is not None:
             timetable.name = name
         timetable.save()
         ok = True
-        return CreateTimetableMutation(timetable=timetable, ok=ok)
+        return CreateTimetableMutation(timetable=timetable, ok=ok, key=timetable.key)
 
 
-# class UpdateTimetableMutation(graphene.Mutation):
-#     """Update timetable mutation in the graphql schema."""
+class AddSectionsTimetableMutation(graphene.Mutation):
+    """Add sections to timetable mutation in the graphql schema."""
+    class Arguments:
+        id = graphene.ID(required=True)
+        key = graphene.String(required=True)
+        course_id = graphene.String(required=True)
+        sections = graphene.List(graphene.String, required=True)
+    
+    ok = graphene.Boolean()
+    timetable = graphene.Field(_TimetableObject)
+
+    def mutate(self, info: graphene.ResolveInfo, id: str, key: str, course_id: str, sections: list[str]) \
+            -> 'AddSectionsTimetableMutation':
+        """Add a meeting to a timetable."""
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception('Timetable not found')
+        
+        if timetable.key != key:
+            raise Exception('Timetable key does not match')
+        
+        course = Course.objects.get(id=course_id)
+        if course is None:
+            raise Exception('Course not found')
+        
+        if course_id not in timetable.sections:
+            timetable.sections[course_id] = []
+        
+        for section in sections:
+            if section not in course.section_codes:
+                raise Exception('Section not found')
+            else:
+                timetable.sections[course_id].append(section)
+        timetable.save()
+        ok = True
+        return AddSectionsTimetableMutation(timetable=timetable, ok=ok)
 
 
 class Mutation(graphene.ObjectType):
     """Mutations in the graphql schema."""
     create_timetable = CreateTimetableMutation.Field()
+    add_sections_timetable = AddSectionsTimetableMutation.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

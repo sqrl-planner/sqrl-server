@@ -2,6 +2,8 @@
 import secrets
 from enum import Enum
 from typing import Optional
+from functools import lru_cache
+
 import petname
 
 from sqrl.extensions import db
@@ -160,8 +162,7 @@ class Course(db.Document):
     description: str = db.StringField()
     term: CourseTerm = db.EnumField(CourseTerm)
     session_code: str = db.StringField(min_length=5, max_length=5)
-    sections: dict[str, Section] = db.MapField(db.EmbeddedDocumentField('Section'),
-                                               default=dict)
+    sections: list[Section] = db.EmbeddedDocumentListField('Section')
     prerequisites: str = db.StringField()  # TODO: Parse this
     corequisites: str = db.StringField()  # TODO: Parse this
     exclusions: str = db.StringField()  # TODO: Parse this
@@ -178,6 +179,12 @@ class Course(db.Document):
          'weights': {'title': 1.5, 'description': 1}
         }
     ]}
+
+    @property
+    @lru_cache
+    def section_codes(self) -> set[str]:
+        """Return a set of section codes for this course."""
+        return {section.code for section in self.sections}
 
 
 def _generate_timetable_name() -> str:
