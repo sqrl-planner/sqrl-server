@@ -135,7 +135,6 @@ class CreateTimetableMutation(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=False, default_value=None)
     
-    ok = graphene.Boolean()
     timetable = graphene.Field(_TimetableObject)
     key = graphene.String()
 
@@ -146,8 +145,7 @@ class CreateTimetableMutation(graphene.Mutation):
         if name is not None:
             timetable.name = name
         timetable.save()
-        ok = True
-        return CreateTimetableMutation(timetable=timetable, ok=ok, key=timetable.key)
+        return CreateTimetableMutation(timetable=timetable, key=timetable.key)
 
 
 class AddSectionsTimetableMutation(graphene.Mutation):
@@ -158,7 +156,6 @@ class AddSectionsTimetableMutation(graphene.Mutation):
         course_id = graphene.String(required=True)
         sections = graphene.List(graphene.String, required=True)
     
-    ok = graphene.Boolean()
     timetable = graphene.Field(_TimetableObject)
 
     def mutate(self, info: graphene.ResolveInfo, id: str, key: str, course_id: str,
@@ -166,26 +163,26 @@ class AddSectionsTimetableMutation(graphene.Mutation):
         """Add a meeting to a timetable."""
         timetable = Timetable.objects.get(id=id)
         if timetable is None:
-            raise Exception('Timetable not found')
+            raise Exception(f'could not find timetable with id "{id}"')
         
         if timetable.key != key:
-            raise Exception('Timetable key does not match')
+            raise Exception(f'the provided timetable key did not match')
         
         course = Course.objects.get(id=course_id)
         if course is None:
-            raise Exception('Course not found')
+            raise Exception(f'could not find course with id "{course_id}"')
         
         if course_id not in timetable.sections:
             timetable.sections[course_id] = []
         
         for section in sections:
             if section not in course.section_codes:
-                raise Exception('Section not found')
+                raise Exception(f'could not find section with code "{section}"')
             else:
                 timetable.sections[course_id].append(section)
+
         timetable.save()
-        ok = True
-        return AddSectionsTimetableMutation(timetable=timetable, ok=ok)
+        return AddSectionsTimetableMutation(timetable=timetable)
 
 
 class Mutation(graphene.ObjectType):
