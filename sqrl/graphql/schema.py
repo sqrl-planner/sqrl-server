@@ -95,7 +95,8 @@ class Query(graphene.ObjectType):
         """Return an _OrganisationObject object with the given code."""
         return Organisation.objects.get(code=code)
 
-    def resolve_organisations(self, info: graphene.ResolveInfo, **kwargs: Any) -> list[Organisation]:
+    def resolve_organisations(self, info: graphene.ResolveInfo, **kwargs: Any) \
+            -> list[Organisation]:
         """Return a list of _OrganisationObject objects."""
         return list(Organisation.objects.all())
 
@@ -107,8 +108,8 @@ class Query(graphene.ObjectType):
         """Return a list of _CourseObject objects."""
         return list(Course.objects.all())
 
-    def resolve_search_courses(self, info: graphene.ResolveInfo, query: str, offset: int, limit: int) \
-            -> list[Course]:
+    def resolve_search_courses(self, info: graphene.ResolveInfo, query: str, offset: int,
+                               limit: int) -> list[Course]:
         """Return a list of _CourseObject objects matching the given search string."""
         courses_code = Course.objects(code__icontains=query)
         # First n search results
@@ -138,7 +139,8 @@ class CreateTimetableMutation(graphene.Mutation):
     timetable = graphene.Field(_TimetableObject)
     key = graphene.String()
 
-    def mutate(self, info: graphene.ResolveInfo, name: Optional[str] = None) -> 'CreateTimetableMutation':
+    def mutate(self, info: graphene.ResolveInfo, name: Optional[str] = None) \
+            -> 'CreateTimetableMutation':
         """Create a timetable."""
         timetable = Timetable()
         if name is not None:
@@ -159,8 +161,8 @@ class AddSectionsTimetableMutation(graphene.Mutation):
     ok = graphene.Boolean()
     timetable = graphene.Field(_TimetableObject)
 
-    def mutate(self, info: graphene.ResolveInfo, id: str, key: str, course_id: str, sections: list[str]) \
-            -> 'AddSectionsTimetableMutation':
+    def mutate(self, info: graphene.ResolveInfo, id: str, key: str, course_id: str,
+               sections: list[str]) -> 'AddSectionsTimetableMutation':
         """Add a meeting to a timetable."""
         timetable = Timetable.objects.get(id=id)
         if timetable is None:
