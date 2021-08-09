@@ -1,9 +1,13 @@
 """Model data classes for timetable."""
+import secrets
 from enum import Enum
 from typing import List, Optional
 
+import petname
+
 from sqrl.extensions import db
 from sqrl.models.common import Time
+
 
 class MeetingDay(Enum):
     """A class representing the day of the week."""
@@ -167,3 +171,21 @@ class Course(db.Document):
          'weights': {'title': 1.5, 'description': 1}
         }
     ]}
+
+
+def _generate_timetable_name() -> str:
+    """Generates a name for a timetable."""
+    return petname.Generate()
+
+
+class Timetable(db.Document):
+    """A class representing a timetable.
+    
+    Instance Attributes:
+       key: The auth key for this timetable.
+       meetings: A mapping of course codes to list of section meetings selected for that course.
+    """
+    name: str = db.StringField(default=_generate_timetable_name)
+    key: str = db.StringField(required=True, default=secrets.token_urlsafe)
+    meetings: dict[SectionMeeting] = db.MapField(db.EmbeddedDocumentListField(SectionMeeting),
+                                                 default=dict)

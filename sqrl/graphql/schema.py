@@ -1,5 +1,5 @@
 import re
-from typing import Any
+from typing import Any, Optional
 
 import graphene
 from mongoengine.queryset.visitor import Q
@@ -11,7 +11,8 @@ from sqrl.models.timetable import (
     Instructor,
     Section,
     Organisation,
-    Course
+    Course,
+    Timetable
 )
     
 
@@ -63,6 +64,12 @@ class _CourseObjectConnection(graphene.relay.Connection):
         node = _CourseObject
 
 
+class _TimetableObject(MongoengineObjectType):
+    """A timetable in the graphql schema."""
+    class Meta:
+        model = Timetable
+
+
 class Query(graphene.ObjectType):
     """A query in the graphql schema."""
     organisation_by_code = graphene.Field(_OrganisationObject, code=graphene.String(required=True))
@@ -108,4 +115,32 @@ class Query(graphene.ObjectType):
             offset -= n
             return list(courses[offset:offset + limit])
 
-schema = graphene.Schema(query=Query)
+
+class CreateTimetableMutation(graphene.Mutation):
+    """Create timetable mutation in the graphql schema."""
+    class Arguments:
+        name = graphene.String(required=False, default_value=None)
+    
+    ok = graphene.Boolean()
+    timetable = graphene.Field(_TimetableObject)
+
+    def mutate(self, info: Any, name: Optional[str] = None) -> 'CreateTimetableMutation':
+        """Create a timetable."""
+        timetable = Timetable()
+        if name is not None:
+            timetable.name = name
+        timetable.save()
+        ok = True
+        return CreateTimetableMutation(timetable=timetable, ok=ok)
+
+
+# class UpdateTimetableMutation(graphene.Mutation):
+#     """Update timetable mutation in the graphql schema."""
+
+
+class Mutation(graphene.ObjectType):
+    """Mutations in the graphql schema."""
+    create_timetable = CreateTimetableMutation.Field()
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation)
