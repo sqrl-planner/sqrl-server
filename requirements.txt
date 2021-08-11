@@ -18,4 +18,5 @@ petname
 python-dotenv
 # Natural Language Processing
 transformers
+sentence_transformers
 torch
