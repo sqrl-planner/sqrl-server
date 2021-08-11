@@ -16,3 +16,6 @@ bs4
 tqdm
 petname
 python-dotenv
+# Natural Language Processing
+transformers
+torch
