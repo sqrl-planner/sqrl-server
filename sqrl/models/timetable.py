@@ -1,4 +1,6 @@
 """Model data classes for timetable."""
+import re
+import math
 import secrets
 from enum import Enum
 from typing import Optional
@@ -185,6 +187,17 @@ class Course(db.Document):
     def section_codes(self) -> set[str]:
         """Return a set of section codes for this course."""
         return {section.code for section in self.sections}
+
+    @property
+    @lru_cache
+    def level(self) -> int:
+        """Return the level of this course."""
+        m = re.search(r'(?:[^\d]*)(\d+)', self.code)
+        return int(math.floor(int(m.group(1)) / 100.0)) * 100
+
+    def __str__(self):
+        """Return a string representation of this course."""
+        return f'{self.code}: {self.title}'
 
 
 def _generate_timetable_name() -> str:
