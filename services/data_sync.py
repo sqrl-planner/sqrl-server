@@ -32,8 +32,7 @@ if __name__ == '__main__':
     if not isinstance(sync_task_schedule, schedule.Job):
         raise ValueError(
             'expected SYNC_TASK_SCHEDULE to be an instance of schedule.Job, not '
-            f'{sync_task_schedule.__class__.__name__}'
-        )
+            f'{sync_task_schedule.__class__.__name__}')
     sync_task_schedule.do(lambda: _sync_job(app))
 
     # Run the schedule loop

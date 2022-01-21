@@ -51,8 +51,7 @@ class UTSG_ArtsSci_TimetableDatasetSource(TimetableDatasetSource):
         """
         super().__init__(session=session)
         self._organisations = {
-            organisation.code: organisation for organisation in self._get_all_organisations()
-        }
+            organisation.code: organisation for organisation in self._get_all_organisations()}
 
     def _get_all_courses(self) -> list[models.Course]:
         """Return all the courses in the session as a list of sqrl.models.Course objects."""
