@@ -1,4 +1,4 @@
-"A module containing dataset sources."
+'A module containing dataset sources.'
 import re
 from dataclasses import dataclass
 from abc import ABC, abstractclassmethod, abstractmethod
@@ -52,13 +52,13 @@ class TimetableSession:
         00019
         """
         suffix = 5 if self.summer else 9
-        return f"{self.year.zfill(4)}{suffix}"
+        return f'{self.year.zfill(4)}{suffix}'
 
     def __str__(self) -> str:
         return self.code
 
     @classmethod
-    def parse(cls, session_code: str) -> "TimetableSession":
+    def parse(cls, session_code: str) -> 'TimetableSession':
         """Return an instance TimetableSession representing the given session code.
         Raise a ValueError if the session code is not formatted properly.
 
@@ -70,7 +70,7 @@ class TimetableSession:
         if len(session_code) != 5:
             raise ValueError(
                 f'invalid session code ("{session_code}"): expected string of length 5'
-                f", not {len(session_code)}"
+                f', not {len(session_code)}'
             )
         elif not session_code.isnumeric():
             raise ValueError(
@@ -79,7 +79,7 @@ class TimetableSession:
         elif int(session_code[-1]) not in {9, 5}:
             raise ValueError(
                 f'invalid session code ("{session_code}"): expected code to end in '
-                f"one of {{9, 5}}, not {session_code[-1]}"
+                f'one of {{9, 5}}, not {session_code[-1]}'
             )
         else:
             return TimetableSession(session_code[:4], session_code[-1] == 5)
@@ -96,8 +96,7 @@ class TimetableDatasetSource(DatasetSource):
     session: Optional[TimetableSession]
 
     def __init__(
-        self, session: Optional[Union[TimetableSession, str]] = None
-    ) -> None:
+            self, session: Optional[Union[TimetableSession, str]] = None) -> None:
         """Initialise an ArtsciTimetableAPI.
 
         Args:

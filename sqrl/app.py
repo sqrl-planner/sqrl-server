@@ -9,13 +9,14 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 def create_app(settings_override: Any = None) -> Flask:
     """
-    Create a Flask application using the app factory pattern. eturn the app instance.
+    Create a Flask application using the app factory pattern. eturn the app
+    instance.
 
     Args:
         settings_override: Override settings
     """
-    app = Flask(__name__, static_folder="../public", static_url_path="")
-    app.config.from_object("config.settings")
+    app = Flask(__name__, static_folder='../public', static_url_path="")
+    app.config.from_object('config.settings')
     if settings_override:
         app.config.update(settings_override)
 
@@ -28,8 +29,8 @@ def create_app(settings_override: Any = None) -> Flask:
     extensions.init_app(app)
 
     # Register mimetypes
-    mimetypes.add_type("text/css", ".css")
-    mimetypes.add_type("text/javascript", ".js")
+    mimetypes.add_type('text/css', '.css')
+    mimetypes.add_type('text/javascript', '.js')
 
     return app
 

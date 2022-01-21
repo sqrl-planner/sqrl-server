@@ -83,7 +83,7 @@ class _TimetableObject(MongoengineObjectType):
 
     class Meta:
         model = Timetable
-        exclude_fields = ("key",)
+        exclude_fields = ('key',)
 
 
 class Query(graphene.ObjectType):
@@ -95,8 +95,7 @@ class Query(graphene.ObjectType):
     organisations = graphene.ConnectionField(_OrganisationObjectConnection)
 
     course_by_id = graphene.Field(
-        _CourseObject, id=graphene.String(required=True)
-    )
+        _CourseObject, id=graphene.String(required=True))
     courses = graphene.ConnectionField(_CourseObjectConnection)
     search_courses = graphene.List(
         _CourseObject,
@@ -106,8 +105,7 @@ class Query(graphene.ObjectType):
     )
 
     timetable_by_id = graphene.Field(
-        _TimetableObject, id=graphene.ID(required=True)
-    )
+        _TimetableObject, id=graphene.ID(required=True))
 
     def resolve_organisation_by_code(
         self, info: graphene.ResolveInfo, code: str
@@ -122,14 +120,12 @@ class Query(graphene.ObjectType):
         return list(Organisation.objects.all())
 
     def resolve_course_by_id(
-        self, info: graphene.ResolveInfo, id: str
-    ) -> Course:
+            self, info: graphene.ResolveInfo, id: str) -> Course:
         """Return a _CourseObject object with the given id."""
         return Course.objects.get(id=id)
 
-    def resolve_courses(
-        self, info: graphene.ResolveInfo, **kwargs: Any
-    ) -> list[Course]:
+    def resolve_courses(self, info: graphene.ResolveInfo,
+                        **kwargs: Any) -> list[Course]:
         """Return a list of _CourseObject objects."""
         return list(Course.objects.all())
 
@@ -141,22 +137,20 @@ class Query(graphene.ObjectType):
         # First n search results
         n = courses_code.count()
         if offset < n:
-            courses = list(courses_code[offset : offset + limit])
+            courses = list(courses_code[offset: offset + limit])
             if limit > n - offset:
-                courses_text = Course.objects.search_text(query).order_by(
-                    "$text_score"
-                )
+                courses_text = Course.objects.search_text(
+                    query).order_by('$text_score')
                 courses += list(courses_text.limit(limit - n + offset))
             return courses
         else:
-            courses = Course.objects.search_text(query).order_by("$text_score")
+            courses = Course.objects.search_text(query).order_by('$text_score')
             offset -= n
-            return list(courses[offset : offset + limit])
+            return list(courses[offset: offset + limit])
 
     def resolve_timetable_by_id(
-        self, info: graphene.ResolveInfo, id: str
-    ) -> Timetable:
-        """Return a _TimetableObject object with the given id."""
+            self, _: graphene.ResolveInfo, id: str) -> Timetable:
+        """Return a Timetable object with the given id."""
         return Timetable.objects.get(id=id)
 
 
@@ -171,7 +165,7 @@ class CreateTimetableMutation(graphene.Mutation):
 
     def mutate(
         self, info: graphene.ResolveInfo, name: Optional[str] = None
-    ) -> "CreateTimetableMutation":
+    ) -> 'CreateTimetableMutation':
         """Create a timetable."""
         timetable = Timetable()
         if name is not None:
@@ -190,15 +184,15 @@ class DeleteTimetableMutation(graphene.Mutation):
     timetable = graphene.Field(_TimetableObject)
 
     def mutate(
-        self, info: graphene.ResolveInfo, id: str, key: str
-    ) -> "DeleteTimetableMutation":
+        self, _: graphene.ResolveInfo, id: str, key: str
+    ) -> 'DeleteTimetableMutation':
         """Delete a timetable."""
         timetable = Timetable.objects.get(id=id)
         if timetable is None:
             raise Exception(f'could not find timetable with id "{id}"')
 
         if timetable.key != key:
-            raise Exception(f"the provided timetable key did not match")
+            raise Exception(f'the provided timetable key did not match')
 
         timetable.delete()
         return DeleteTimetableMutation(timetable=timetable)
@@ -217,19 +211,19 @@ class AddSectionsTimetableMutation(graphene.Mutation):
 
     def mutate(
         self,
-        info: graphene.ResolveInfo,
+        _: graphene.ResolveInfo,
         id: str,
         key: str,
         course_id: str,
         sections: list[str],
-    ) -> "AddSectionsTimetableMutation":
+    ) -> 'AddSectionsTimetableMutation':
         """Add sections to a timetable."""
         timetable = Timetable.objects.get(id=id)
         if timetable is None:
             raise Exception(f'could not find timetable with id "{id}"')
 
         if timetable.key != key:
-            raise Exception(f"the provided timetable key did not match")
+            raise Exception(f'the provided timetable key did not match')
 
         course = Course.objects.get(id=course_id)
         if course is None:
@@ -240,7 +234,8 @@ class AddSectionsTimetableMutation(graphene.Mutation):
 
         for section in sections:
             if section not in course.section_codes:
-                raise Exception(f'could not find section with code "{section}"')
+                raise Exception(
+                    f'could not find section with code "{section}"')
             else:
                 timetable.sections[course_id].append(section)
 
@@ -261,21 +256,22 @@ class SetSectionsTimetableMutation(graphene.Mutation):
 
     def mutate(
         self,
-        info: graphene.ResolveInfo,
+        _: graphene.ResolveInfo,
         id: str,
         key: str,
         course_id: str,
         sections: list[str],
-    ) -> "SetSectionsTimetableMutation":
-        """Set sections in a timetable. If a section of the same type for the given course exists
-        in the timetable, then it is removed and replaced with the new one.
+    ) -> 'SetSectionsTimetableMutation':
+        """Set sections in a timetable. If a section of the same type for the
+        given course exists in the timetable, then it is removed and replaced
+        with the new one.
         """
         timetable = Timetable.objects.get(id=id)
         if timetable is None:
             raise Exception(f'could not find timetable with id "{id}"')
 
         if timetable.key != key:
-            raise Exception(f"the provided timetable key did not match")
+            raise Exception(f'the provided timetable key did not match')
 
         course = Course.objects.get(id=course_id)
         if course is None:
@@ -288,18 +284,18 @@ class SetSectionsTimetableMutation(graphene.Mutation):
         for section_code in sections:
             if section_code not in course.section_codes:
                 raise Exception(
-                    f'could not find section with code "{section_code}"'
-                )
+                    f'could not find section with code "{section_code}"')
             else:
-                teaching_methods_to_remove.add(section_code.split("-")[0])
+                teaching_methods_to_remove.add(section_code.split('-')[0])
 
         # Clean old sections
         old_sections = timetable.sections[course_id]
         for i in range(len(old_sections) - 1, -1, -1):
             # Extract teaching method and check if it needs to be removed
-            old_teaching_method = old_sections[i].split("-")[0]
+            old_teaching_method = old_sections[i].split('-')[0]
             if old_teaching_method in teaching_methods_to_remove:
-                # Remove old section from timetable since it is the same type as a new one
+                # Remove old section from timetable since it is the same type
+                # as a new one
                 timetable.sections[course_id].pop(i)
 
         # Add new sections
