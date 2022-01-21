@@ -54,11 +54,14 @@ class SectionDeliveryMode(Enum):
     CLASS = 'CLASS'
     ONLINE_SYNC = 'ONLSYNC'
     ONLINE_ASYNC = 'ONLASYNC'
+    IN_PERSON = 'INPER'
+    SYNC = "SYNC"
+    ASYNC = "ASYNC"
 
 
 class Instructor(db.EmbeddedDocument):
     """A class representing a course instructor.
-    
+
     Instance Attributes:
         id: A unique integer id representing this instructor as returned by the API.
         first_name: The first name of this instructor.
@@ -70,7 +73,7 @@ class Instructor(db.EmbeddedDocument):
 
 class Section(db.EmbeddedDocument):
     """A class representing a course section/meeting.
-    
+
     Instance Attributes:
         teaching_method: The teaching method for this section, or None if this section has no
             teaching method.
@@ -88,12 +91,15 @@ class Section(db.EmbeddedDocument):
         enrolment_indicator: A string representing the enrollment indicator for this section,
             or None if there is no enrollment indicator.
     """
-    teaching_method: Optional[SectionTeachingMethod] = db.EnumField(SectionTeachingMethod, null=True)
+    teaching_method: Optional[SectionTeachingMethod] = db.EnumField(
+        SectionTeachingMethod, null=True)
     section_number: str = db.StringField()
     subtitle: Optional[str] = db.StringField(null=True)
     instructors: list[Instructor] = db.EmbeddedDocumentListField('Instructor')
-    meetings: list[SectionMeeting] = db.EmbeddedDocumentListField('SectionMeeting')
-    delivery_mode: Optional[SectionDeliveryMode] = db.EnumField(SectionDeliveryMode, null=True)
+    meetings: list[SectionMeeting] = db.EmbeddedDocumentListField(
+        'SectionMeeting')
+    delivery_mode: Optional[SectionDeliveryMode] = db.EnumField(
+        SectionDeliveryMode, null=True)
     cancelled: bool = db.BooleanField()
     has_waitlist: bool = db.BooleanField()
     enrolment_capacity: Optional[int] = db.IntField(null=True)
@@ -106,7 +112,7 @@ class Section(db.EmbeddedDocument):
         """Return a string representing the code of this section. This is a combination of the
         teaching method and the section number, separated by a hyphen.
         """
-        return f'{self.teaching_method.value}-{self.section_number}' 
+        return f'{self.teaching_method.value}-{self.section_number}'
 
 
 class CourseTerm(Enum):
@@ -120,7 +126,7 @@ class Campus(Enum):
     """University campus"""
     ST_GEORGE = 'UTSG'
     SCARBOROUGH = 'UTSC'
-    MISSISSAUGA = 'UTM'    
+    MISSISSAUGA = 'UTM'
 
 
 class Organisation(db.Document):
@@ -133,11 +139,11 @@ class Organisation(db.Document):
     """
     code: str = db.StringField(primary_key=True)
     name: str = db.StringField(required=True)
-    
+
 
 class Course(db.Document):
     """A class representing a course.
-    
+
     Instance Attributes:
         id: The full code of the course.
         organisation: The Organisation that this course is associated with.
@@ -179,7 +185,7 @@ class Course(db.Document):
         {'fields': ['$title', '$description'],
          'default_language': 'english',
          'weights': {'title': 1.5, 'description': 1}
-        }
+         }
     ]}
 
     @property
@@ -207,11 +213,12 @@ def _generate_timetable_name() -> str:
 
 class Timetable(db.Document):
     """A class representing a timetable.
-    
+
     Instance Attributes:
        key: The auth key for this timetable.
        meetings: A mapping of course codes to list of section meetings selected for that course.
     """
     name: str = db.StringField(default=_generate_timetable_name)
     key: str = db.StringField(required=True, default=secrets.token_urlsafe)
-    sections: dict[str, list[str]] = db.MapField(db.ListField(db.StringField()), default=dict)
+    sections: dict[str, list[str]] = db.MapField(
+        db.ListField(db.StringField()), default=dict)
