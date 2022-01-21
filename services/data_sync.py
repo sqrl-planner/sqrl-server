@@ -8,8 +8,9 @@ from sqrl import create_app
 
 
 def _sync_job():
-    print('syncing')
-    print(datetime.now().strftime("%H:%M:%S"))
+    """A job that syncs data from remote APIs and local database."""
+    print(f'Syncing data at {datetime.now()}...')
+    start_time = time.time()
 
 
 if __name__ == '__main__':
