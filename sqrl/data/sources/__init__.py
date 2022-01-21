@@ -11,10 +11,11 @@ from sqrl import models
 
 class DatasetSource(ABC):
     """An abstract class representing a dataset source."""
+
     @abstractmethod
     def sync(self, db: MongoEngine, *args: Any, **kwargs: Any) -> None:
         """Pull data from the source and sync it with the database.
-        
+
         Args:
             db: The database session.
         """
@@ -24,20 +25,21 @@ class DatasetSource(ABC):
 @dataclass
 class TimetableSession:
     """A class representing a session of a calendar year.
-    
+
     Instance Attributes:
         year: The year of the session.
         summer: Whether this is a summer session. Defaults to False, meaning that this is a
             fall/winter session.
     """
+
     year: int
     summer: bool = False
-    
+
     @property
     def code(self) -> str:
         """
         Return the session code for this TimetableSession.
-        
+
         The session code is a five-length string where the first four characters denote the session
         year, and the last character denotes whether it is a fall/winter (9) or summer session (5).
         For example, the code `20209` denotes the fall/winter session of 2020.
@@ -50,13 +52,13 @@ class TimetableSession:
         00019
         """
         suffix = 5 if self.summer else 9
-        return f'{self.year.zfill(4)}{suffix}'
+        return f"{self.year.zfill(4)}{suffix}"
 
     def __str__(self) -> str:
         return self.code
 
     @classmethod
-    def parse(cls, session_code: str) -> 'TimetableSession':
+    def parse(cls, session_code: str) -> "TimetableSession":
         """Return an instance TimetableSession representing the given session code.
         Raise a ValueError if the session code is not formatted properly.
 
@@ -66,17 +68,23 @@ class TimetableSession:
         True
         """
         if len(session_code) != 5:
-            raise ValueError(f'invalid session code ("{session_code}"): expected string of length 5'
-                             f', not {len(session_code)}')
+            raise ValueError(
+                f'invalid session code ("{session_code}"): expected string of length 5'
+                f", not {len(session_code)}"
+            )
         elif not session_code.isnumeric():
-            raise ValueError(f'invalid session code ("{session_code}"): expected numeric string')
+            raise ValueError(
+                f'invalid session code ("{session_code}"): expected numeric string'
+            )
         elif int(session_code[-1]) not in {9, 5}:
-            raise ValueError(f'invalid session code ("{session_code}"): expected code to end in '
-                             f'one of {{9, 5}}, not {session_code[-1]}')
+            raise ValueError(
+                f'invalid session code ("{session_code}"): expected code to end in '
+                f"one of {{9, 5}}, not {session_code[-1]}"
+            )
         else:
             return TimetableSession(session_code[:4], session_code[-1] == 5)
-        
-    
+
+
 class TimetableDatasetSource(DatasetSource):
     """A dataset source that contains information about course timetables.
 
@@ -84,12 +92,14 @@ class TimetableDatasetSource(DatasetSource):
         session_code: The session code. Defaults to None, meaning the latest (most up-to-date)
             session is used.
     """
+
     session: Optional[TimetableSession]
 
-    def __init__(self,
-                 session: Optional[Union[TimetableSession, str]] = None) -> None:
+    def __init__(
+        self, session: Optional[Union[TimetableSession, str]] = None
+    ) -> None:
         """Initialise an ArtsciTimetableAPI.
-        
+
         Args:
             session: An optional session that can be supplied instead of the default.
                 This can be an instance of TimetableSession or a string providing the session code.
@@ -126,8 +136,8 @@ class TimetableDatasetSource(DatasetSource):
     def _get_latest_session(cls, verify: bool = False) -> TimetableSession:
         """Return the most up-to-date session from the timetable data source.
         Raise a ValueError if the session could not be found.
-        
+
         Args:
-            verify: Whether to verify the session code against the timetable. 
+            verify: Whether to verify the session code against the timetable.
         """
         raise NotImplementedError

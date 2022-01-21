@@ -9,7 +9,7 @@ def nullable_convert(value: Any, func: Callable[[Any], Any]) -> Any:
     else:
         return func(value)
 
-    
+
 def int_or_none(value: Any) -> Optional[int]:
     """Converts a value to an integer, while silently handling a None value.
 

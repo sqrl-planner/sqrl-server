@@ -1,22 +1,24 @@
-# Flask
-flask
-flask-cors
-flask-mongoengine
-# GraphQL
-graphql-server[flask]
-graphene
-git+https://github.com/graphql-python/graphene-mongo.git@9e79a53e711ec8fb43868d908a1fbd3987420f0c
-graphql_core
-# Scheduler
-schedule
-# Scraping
-requests
-bs4
-# Misc
-tqdm
-petname
-python-dotenv
-# Natural Language Processing
-transformers
-sentence_transformers
-torch
+Flask==1.1.2
+Werkzeug==2.0.2
+gunicorn==20.1.0
+
+Flask-Cors==3.0.10
+flask-mongoengine==1.0.0
+
+graphql-server[flask]==3.0.0b5
+graphene==3.0b7
+graphene-mongo
+# git+https://github.com/graphql-python/graphene-mongo.git@9e79a53e711ec8fb43868d908a1fbd3987420f0c
+graphql_core==3.2.0
+
+pytest==6.2.5
+pytest-cov==3.0.0
+flake8==4.0.1
+black==20.8b1
+
+bs4==0.0.1
+requests==2.26.0
+
+tqdm==4.62.0
+petname==2.6
+python-dotenv==0.19.0

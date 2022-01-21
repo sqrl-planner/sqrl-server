@@ -8,6 +8,6 @@ from sqrl.models.timetable import (
     Section,
     CourseTerm,
     Course,
-    Campus
+    Campus,
 )
 from sqrl.models.common import Time

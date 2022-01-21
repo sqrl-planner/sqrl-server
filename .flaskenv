@@ -1,1 +1,1 @@
-FLASK_APP="./sqrl/__init__.py"
+FLASK_APP="sqrl.app:create_app()"

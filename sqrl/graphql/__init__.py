@@ -6,10 +6,8 @@ from sqrl.graphql.schema import schema
 def init_app(app: Flask) -> None:
     """Initialise GraphQL with a flask app context."""
     app.add_url_rule(
-        '/graphql',
+        "/graphql",
         view_func=GraphQLView.as_view(
-            'graphql',
-            schema=schema.graphql_schema,
-            graphiql=True
-        )
+            "graphql", schema=schema.graphql_schema, graphiql=True
+        ),
     )

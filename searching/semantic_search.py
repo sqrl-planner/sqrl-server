@@ -8,27 +8,34 @@ from sentence_transformers import SentenceTransformer, util
 from sqrl import create_app
 from sqrl.models import Course, Campus
 
+
 def get_courses() -> list[Course]:
     """Returns a list of courses."""
-    print('Loading courses...')
+    print("Loading courses...")
     start_time = time.time()
     app = create_app()
     with app.app_context():
         courses = list(Course.objects.all())
-        print(f'Loaded {len(courses)} courses in {time.time() - start_time} seconds.')
+        print(
+            f"Loaded {len(courses)} courses in {time.time() - start_time} seconds."
+        )
         return courses
 
-def load_model(model_name: str = 'msmarco-distilbert-base-v4') -> SentenceTransformer:
+
+def load_model(
+    model_name: str = "msmarco-distilbert-base-v4",
+) -> SentenceTransformer:
     """Loads the pretrained model."""
     print(f'Loading model "{model_name}""...')
     start_time = time.time()
     model = SentenceTransformer(model_name)
     if torch.cuda.is_available():
-            # Use cuda if available
-            model = model.to(torch.device('cuda'))
-            print(f'Using GPU')
-    print(f'Loaded model in {time.time() - start_time} seconds.')
+        # Use cuda if available
+        model = model.to(torch.device("cuda"))
+        print(f"Using GPU")
+    print(f"Loaded model in {time.time() - start_time} seconds.")
     return model
+
 
 # def vectorise_courses(courses: list[Course], model: SentenceTransformer) \
 #         -> tuple[int, np.ndarray]:
@@ -54,41 +61,51 @@ def load_model(model_name: str = 'msmarco-distilbert-base-v4') -> SentenceTransf
 #     print(f'Vectorised {len(documents)} courses in {time.time() - start_time} seconds.')
 #     return n_tags, embeddings.reshape((len(courses), n_tags, -1))
 
-def vectorise_courses(courses: list[Course], model: SentenceTransformer) -> np.ndarray:
+
+def vectorise_courses(
+    courses: list[Course], model: SentenceTransformer
+) -> np.ndarray:
     CAMPUS_NAMES = {
-        Campus.ST_GEORGE: 'St George',
-        Campus.SCARBOROUGH: 'Scarborough',
-        Campus.MISSISSAUGA: 'Mississauga'
+        Campus.ST_GEORGE: "St George",
+        Campus.SCARBOROUGH: "Scarborough",
+        Campus.MISSISSAUGA: "Mississauga",
     }
 
-    print('Vectorising courses...')
+    print("Vectorising courses...")
     start_time = time.time()
 
     documents = []
     for course in courses:
         campus_str = CAMPUS_NAMES[course.campus]
         year_str = {
-            0: 'zeroth',
-            100: 'first',
-            200: 'second',
-            300: 'third',
-            400: 'fourth'
+            0: "zeroth",
+            100: "first",
+            200: "second",
+            300: "third",
+            400: "fourth",
         }[course.level]
-        documents.append(f'{course.code}, {course.title}, is a {year_str} year course (level '
-                         f'{course.level} course) at the {campus_str} campus. In {course.code} '
-                         f'students will learn: {course.description}.'.lower())
+        documents.append(
+            f"{course.code}, {course.title}, is a {year_str} year course (level "
+            f"{course.level} course) at the {campus_str} campus. In {course.code} "
+            f"students will learn: {course.description}.".lower()
+        )
 
-    embeddings = model.encode(documents, show_progress_bar=True, convert_to_numpy=True)
-    print(f'Vectorised {len(documents)} courses in {time.time() - start_time} seconds.')
-    return  embeddings
+    embeddings = model.encode(
+        documents, show_progress_bar=True, convert_to_numpy=True
+    )
+    print(
+        f"Vectorised {len(documents)} courses in {time.time() - start_time} seconds."
+    )
+    return embeddings
+
 
 def search_courses(query: str, top_k: int = 10) -> list[Course]:
     """Returns the top k courses that match the query."""
-    print('Searching courses...')
+    print("Searching courses...")
     start_time = time.time()
 
     query_vector = np.array(model.encode([query]))
-    
+
     # query_vector_matrix = np.tile(query_vector, (n_tags, 1))
     # scores = []
     # tag_scores = []
@@ -101,16 +118,17 @@ def search_courses(query: str, top_k: int = 10) -> list[Course]:
     scores = util.pytorch_cos_sim(query_vector, course_embeddings)[0]
     top_results = torch.topk(scores, k=top_k)
 
-    print('\n\n======================\n\n')
-    print('Query:', query)
-    print(f'Found {top_k} results in {time.time() - start_time} seconds:\n')
-    
+    print("\n\n======================\n\n")
+    print("Query:", query)
+    print(f"Found {top_k} results in {time.time() - start_time} seconds:\n")
+
     for score, index in zip(top_results[0], top_results[1]):
-        print(courses[index], f'(score: {score:.4f})')
+        print(courses[index], f"(score: {score:.4f})")
 
     # for i in top_k_indices:
     #     score = scores[i]
     #     print(courses[i], f'(score: {score:.4f}, tags: {tag_scores[i]})')
+
 
 courses = get_courses()
 model = load_model()
