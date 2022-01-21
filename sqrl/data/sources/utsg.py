@@ -4,7 +4,6 @@ from typing import Optional, Union
 
 import requests
 from bs4 import BeautifulSoup
-from flask_mongoengine import MongoEngine
 
 from sqrl import models
 from sqrl.utils import nullable_convert, int_or_none

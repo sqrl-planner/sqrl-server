@@ -30,7 +30,7 @@ def load_model(model_name: str = 'msmarco-distilbert-base-v4',
     if torch.cuda.is_available():
         # Use cuda if available
         model = model.to(torch.device('cuda'))
-        print(f'Using GPU')
+        print('Using GPU')
     print(f'Loaded model in {time.time() - start_time} seconds.')
     return model
 

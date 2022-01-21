@@ -1,8 +1,6 @@
-import re
 from typing import Any, Optional
 
 import graphene
-from mongoengine.queryset.visitor import Q
 from graphene_mongo import MongoengineObjectType
 
 from sqrl.models.common import Time
@@ -192,7 +190,7 @@ class DeleteTimetableMutation(graphene.Mutation):
             raise Exception(f'could not find timetable with id "{id}"')
 
         if timetable.key != key:
-            raise Exception(f'the provided timetable key did not match')
+            raise Exception('the provided timetable key did not match')
 
         timetable.delete()
         return DeleteTimetableMutation(timetable=timetable)
@@ -223,7 +221,7 @@ class AddSectionsTimetableMutation(graphene.Mutation):
             raise Exception(f'could not find timetable with id "{id}"')
 
         if timetable.key != key:
-            raise Exception(f'the provided timetable key did not match')
+            raise Exception('the provided timetable key did not match')
 
         course = Course.objects.get(id=course_id)
         if course is None:
@@ -271,7 +269,7 @@ class SetSectionsTimetableMutation(graphene.Mutation):
             raise Exception(f'could not find timetable with id "{id}"')
 
         if timetable.key != key:
-            raise Exception(f'the provided timetable key did not match')
+            raise Exception('the provided timetable key did not match')
 
         course = Course.objects.get(id=course_id)
         if course is None:

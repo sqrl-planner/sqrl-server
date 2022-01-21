@@ -1,5 +1,4 @@
 'A module containing dataset sources.'
-import re
 from dataclasses import dataclass
 from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Any, Optional, Union

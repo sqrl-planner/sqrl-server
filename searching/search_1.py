@@ -101,8 +101,7 @@ def search_course_2(
     n_tags = embeddings.shape[1]
     query_vector_matrix = np.tile(query_vector, (n_tags, 1))
     scores = [
-        np.sum(np.linalg.norm(query_vector_matrix -
-               tag_embeddings, axis=1)) / n_tags
+        np.sum(np.linalg.norm(query_vector_matrix - tag_embeddings, axis=1)) / n_tags
         for tag_embeddings in embeddings
     ]
     indices = np.argsort(scores)
@@ -121,7 +120,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         # Use cuda if available
         model = model.to(torch.device('cuda'))
-        print(f'Using GPU')
+        print('Using GPU')
     # Vectorise the courses
     print('Vectorising courses...')
     embeddings = vectorise_courses_2(COURSES, model)
