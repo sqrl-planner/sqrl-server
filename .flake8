@@ -1,1 +1,3 @@
 [flake8]
+exclude = tests/*
+max-complexity = 10
