@@ -1,16 +1,23 @@
 """A worker that pulls data from remote APIs and syncs it with local database."""
 import time
-from datetime import datetime
 
 import schedule
+from flask import Flask
 
 from sqrl import create_app
+from sqrl.extensions import db
 
 
-def _sync_job():
+def _sync_job(app: Flask) -> None:
     """A job that syncs data from remote APIs and local database."""
-    print(f'Syncing data at {datetime.now()}...')
-    start_time = time.time()
+    dataset_sources = app.config.get('DATASET_SOURCES', {})
+    print(f'Syncing data from ({len(dataset_sources)}) dataset sources')
+    print('-' * 80)
+    for source_name, source in dataset_sources.items():
+        print(f'* Syncing {source_name}...', end='', flush=True)
+        start_time = time.time()
+        source.sync(db)
+        print(f'Finished syncing {source_name} in {time.time() - start_time:.2f} seconds')
 
 
 if __name__ == '__main__':
@@ -22,7 +29,7 @@ if __name__ == '__main__':
     if not isinstance(sync_task_schedule, schedule.Job):
         raise ValueError('expected SYNC_TASK_SCHEDULE to be an instance of schedule.Job, not '
                         f'{sync_task_schedule.__class__.__name__}')
-    sync_task_schedule.do(_sync_job)
+    sync_task_schedule.do(lambda: _sync_job(app))
     
     # Run the schedule loop
     while True:
