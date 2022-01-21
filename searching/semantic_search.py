@@ -74,14 +74,12 @@ def vectorise_courses(courses: list[Course],
     documents = []
     for course in courses:
         campus_str = CAMPUS_NAMES[course.campus]
-        year_str = {0: 'zeroth', 100: 'first', 200: 'second', 300: 'third', 400: 'fourth', }[
-            course.level
-        ]
+        year_str = {0: 'zeroth', 100: 'first', 200: 'second',
+                    300: 'third', 400: 'fourth', }[course.level]
         documents.append(
             f'{course.code}, {course.title}, is a {year_str} year course (level '
             f'{course.level} course) at the {campus_str} campus. In {course.code} '
-            f'students will learn: {course.description}.'.lower()
-        )
+            f'students will learn: {course.description}.'.lower())
 
     embeddings = model.encode(
         documents, show_progress_bar=True, convert_to_numpy=True)

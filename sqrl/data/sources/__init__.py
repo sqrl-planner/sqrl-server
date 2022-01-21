@@ -69,8 +69,7 @@ class TimetableSession:
         if len(session_code) != 5:
             raise ValueError(
                 f'invalid session code ("{session_code}"): expected string of length 5'
-                f', not {len(session_code)}'
-            )
+                f', not {len(session_code)}')
         elif not session_code.isnumeric():
             raise ValueError(
                 f'invalid session code ("{session_code}"): expected numeric string'
@@ -78,8 +77,7 @@ class TimetableSession:
         elif int(session_code[-1]) not in {9, 5}:
             raise ValueError(
                 f'invalid session code ("{session_code}"): expected code to end in '
-                f'one of {{9, 5}}, not {session_code[-1]}'
-            )
+                f'one of {{9, 5}}, not {session_code[-1]}')
         else:
             return TimetableSession(session_code[:4], session_code[-1] == 5)
 

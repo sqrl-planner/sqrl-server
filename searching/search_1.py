@@ -22,9 +22,8 @@ def vectorise_courses_1(
         br_str = f'Breath Requirements: {course.breadth_categories}'
         campus_str = CAMPUS_NAMES[course.campus]
 
-        year_str = {0: 'zeroth', 100: 'first', 200: 'second', 300: 'third', 400: 'fourth', }[
-            course.level
-        ]
+        year_str = {0: 'zeroth', 100: 'first', 200: 'second',
+                    300: 'third', 400: 'fourth', }[course.level]
         level_str = f'{course.level} level / {year_str} year'
         document = f'{course.code}: {course.title}\n{course.description}\n{br_str}\n{campus_str}\n{level_str}'
         documents.append(document)
@@ -40,9 +39,8 @@ def vectorise_courses_2(
     for course in courses:
         br_str = f'Breath Requirements: {course.breadth_categories}'
         campus_str = CAMPUS_NAMES[course.campus]
-        year_str = {0: 'zeroth', 100: 'first', 200: 'second', 300: 'third', 400: 'fourth', }[
-            course.level
-        ]
+        year_str = {0: 'zeroth', 100: 'first', 200: 'second',
+                    300: 'third', 400: 'fourth', }[course.level]
         level_str = f'{course.level} level / {year_str} year'
         documents.extend(
             [course.code, course.title, course.description,
