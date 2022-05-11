@@ -1,15 +1,16 @@
 Flask==1.1.2
+Jinja2<3.1.0
 Werkzeug==2.0.2
 gunicorn==20.1.0
+itsdangerous<=2.0.1
 
 Flask-Cors==3.0.10
-flask-mongoengine==1.0.0
+flask-mongoengine
 
-graphql-server[flask]==3.0.0b5
-graphene==3.0b7
+graphql-server[flask]
+graphene
 graphene-mongo
-# git+https://github.com/graphql-python/graphene-mongo.git@9e79a53e711ec8fb43868d908a1fbd3987420f0c
-graphql_core==3.2.0
+graphql_core
 
 pytest==6.2.5
 pytest-cov==3.0.0
