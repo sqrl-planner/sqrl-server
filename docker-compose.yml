@@ -11,8 +11,19 @@ x-app: &default-app
   tty: true
   volumes:
     - "${DOCKER_WEB_VOLUME:-./public:/app/public}"
+  depends_on:
+    - "mongodb"
 
 services:
+  mongodb:
+    image: mongo:latest
+    env_file:
+      - ".env"
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
+
   web:
     <<: *default-app
     deploy:
@@ -28,4 +39,6 @@ services:
       retries: 3
     ports:
       - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:8000"
-      
+
+volumes:
+  mongodb: {}
