@@ -2,6 +2,7 @@
 import time
 
 import click
+from yaspin import yaspin
 from flask import Flask, current_app
 from flask.cli import with_appcontext
 
@@ -37,9 +38,11 @@ def _sync_command(yes: bool) -> None:
                 f'Syncing data from ({len(dataset_sources)}) dataset sources')
             print('-' * 80)
             for source_name, source in dataset_sources.items():
-                print(f'* Syncing {source_name}...', end="", flush=True)
-                start_time = time.time()
-                source.sync(db)
-                print(
-                    f'Finished syncing {source_name} in {time.time() - start_time:.2f} seconds'
-                )
+                with yaspin(text=source_name, timer=True) as spinner:
+                  try:
+                    source.sync(db)
+                    # we're done!
+                    spinner.ok("✅ ")
+                  except Exception as e:
+                    spinner.fail("💥 ")  # something went wrong!
+                    sp.write(str(e))
