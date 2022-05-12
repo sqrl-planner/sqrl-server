@@ -22,7 +22,7 @@
 
  *The first time you run this, it's going to take 5-10 minutes depending on your internet connection and hardware.*
  ```shell
- docker-compose -f docker-compose.yml up --build
+ docker-compose up --build
  ```
  Once the image is built, Docker will automatically spin up a container with the image. The server is now running!
 
