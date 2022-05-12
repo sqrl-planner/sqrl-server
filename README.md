@@ -41,7 +41,7 @@ If your database is empty, you'll need course information to use sqrl. To pull t
 ```shell
 flask sync
 ```
-Alternatively, you can run the [data sync service](https://github.com/sqrl-planner/sqrl-server/tree/main/services) to periodically aggregate and sync course data. The Docker image already sets up a cron job for syncing data according to a schedule (see the ``DATA_SYNC_SCHEDULE`` environment variable).
+The Docker image already sets up a cron job for syncing data according to a schedule (see the ``DATA_SYNC_SCHEDULE`` environment variable).
 
 Currently, the dataset sources are hardcoded parameters in the [``config/settings.py``](https://github.com/sqrl-planner/sqrl-server/blob/main/config/settings.py) file. You must modify this file directly to customize the data sources.
 
