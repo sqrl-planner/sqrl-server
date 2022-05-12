@@ -33,6 +33,8 @@ RUN if [ "${FLASK_ENV}" != "development" ]; then \
 
 RUN pip3 install --user --no-cache-dir .  # run setup.py
 
+RUN flask sync
+
 EXPOSE 8000
 
 CMD ["gunicorn", "-c", "python:config.gunicorn", "sqrl.app:create_app()"]
