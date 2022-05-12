@@ -45,4 +45,4 @@ def _sync_command(yes: bool) -> None:
                     spinner.ok("✅ ")
                   except Exception as e:
                     spinner.fail("💥 ")  # something went wrong!
-                    sp.write(str(e))
+                    spinner.write(str(e))
