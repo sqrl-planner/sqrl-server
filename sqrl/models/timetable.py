@@ -61,6 +61,9 @@ class SectionDeliveryMode(Enum):
     IN_PERSON = 'INPER'
     SYNC = 'SYNC'
     ASYNC = 'ASYNC'
+    # idk why they keep changing delivery modes
+    ASYIF = 'ASYIF'
+    SYNIF = 'SYNIF'
 
 
 class Instructor(db.EmbeddedDocument):

@@ -17,8 +17,13 @@ x-app: &default-app
 services:
   mongodb:
     image: mongo:latest
+    container_name: mongodb
     env_file:
       - ".env"
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+        MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+        MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     ports:
       - 27017:27017
     volumes:
@@ -39,6 +44,8 @@ services:
       retries: 3
     ports:
       - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:8000"
+    links:
+      - mongodb
 
 volumes:
   mongodb: {}
