@@ -1,5 +1,5 @@
 # sqrl-server
- Backend API server for sqrl, a timetable planner for the University of Toronto, Faculty of Arts & Science.
+ Backend API server for sqrl - a timetable planner for the University of Toronto, Faculty of Arts & Science.
 
  ## Running the server
  You'll need to have [Docker installed](https://docs.docker.com/get-docker/).
@@ -32,7 +32,9 @@
 
 #### Setting up the database
 
-sqrl-server uses MongoDB, a NoSQL database program. You can run a MongoDB instance locally or use a number of database providers. Create an empty database on your MongoDB instance and update the ``.env`` file with your instance information (host, credentials, and db name).
+sqrl-server uses MongoDB, a NoSQL database program. An instance of MongoDB is already setup for you (with a ``sqrl`` database) by the Docker container. 
+
+Alterntively, you can run an instance locally or use a number of database providers. If you do so, create an empty database on your MongoDB instance and update the ``.env`` file with your instance information (host, credentials, and db name).
 
 #### Pulling and syncing course data
 
@@ -41,7 +43,7 @@ If your database is empty, you'll need course information to use sqrl. To pull t
 ```shell
 flask sync
 ```
-The Docker image already sets up a cron job for syncing data according to a schedule (see the ``DATA_SYNC_SCHEDULE`` environment variable).
+The Docker container will automaticlly sync the data on the first-run. You might find it useful to setup a cron job to periodically run this job in production.
 
 Currently, the dataset sources are hardcoded parameters in the [``config/settings.py``](https://github.com/sqrl-planner/sqrl-server/blob/main/config/settings.py) file. You must modify this file directly to customize the data sources.
 
