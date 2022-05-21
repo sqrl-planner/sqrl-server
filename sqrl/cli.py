@@ -1,6 +1,4 @@
 """Custom commands used with the Flask CLI."""
-import time
-
 import click
 from yaspin import yaspin
 from flask import Flask, current_app
