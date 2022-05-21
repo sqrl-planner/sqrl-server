@@ -11,7 +11,7 @@ SERVER_NAME = os.getenv(
 # MongoDB configuration
 MONGODB_SETTINGS = {
     'db': os.getenv('MONGODB_DB', 'sqrl'),
-    'host': os.getenv('MONGODB_HOST', 'localhost'),
+    'host': os.getenv('MONGODB_HOST', 'mongodb'),
     'port': int(os.getenv('MONGODB_PORT', 27017)),
     'username': os.getenv('MONGODB_USERNAME', None),
     'password': os.getenv('MONGODB_PASSWORD', None),

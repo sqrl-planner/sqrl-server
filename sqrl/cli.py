@@ -39,10 +39,13 @@ def _sync_command(yes: bool) -> None:
             print('-' * 80)
             for source_name, source in dataset_sources.items():
                 with yaspin(text=source_name, timer=True) as spinner:
-                  try:
-                    source.sync(db)
-                    # we're done!
-                    spinner.ok("✅ ")
-                  except Exception as e:
-                    spinner.fail("💥 ")  # something went wrong!
-                    spinner.write(str(e))
+                    try:
+                        source.sync(db)
+                        # we're done!
+                        spinner.ok("✅ ")
+                    except Exception as e:
+                        spinner.fail("💥 ")  # something went wrong!
+                        spinner.write(str(e))
+                        raise click.ClickException(
+                            f'Could not sync data from {source_name}'
+                        )
