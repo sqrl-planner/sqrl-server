@@ -35,6 +35,4 @@ RUN pip3 install --user --no-cache-dir .  # run setup.py
 
 EXPOSE 8000
 
-RUN flask sync -y
-
 CMD ["gunicorn", "-c", "python:config.gunicorn", "sqrl.app:create_app()"]
