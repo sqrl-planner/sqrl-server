@@ -1,5 +1,5 @@
 # sqrl-server
- Backend API server for sqrl, a timetable planner for the University of Toronto, Faculty of Arts & Science.
+ Backend API server for sqrl - a timetable planner for the University of Toronto, Faculty of Arts & Science.
 
  ## Running the server
  You'll need to have [Docker installed](https://docs.docker.com/get-docker/).
