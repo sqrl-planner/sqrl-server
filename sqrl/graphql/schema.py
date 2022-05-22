@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 import graphene
 from graphene_mongo import MongoengineObjectType
+from flask import current_app
 
 from sqrl.models.common import Time
 from sqrl.models.timetable import (
@@ -131,6 +132,10 @@ class Query(graphene.ObjectType):
         self, info: graphene.ResolveInfo, query: str, offset: int, limit: int
     ) -> list[Course]:
         """Return a list of _CourseObject objects matching the given search string."""
+        # log search query
+        current_app.logger.info(f'searchCourses - query: "{query}", '
+                                f'offset: {offset}, limit: {limit}')
+
         courses_code = Course.objects(code__icontains=query)
         # First n search results
         n = courses_code.count()

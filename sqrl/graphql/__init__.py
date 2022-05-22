@@ -8,5 +8,7 @@ def init_app(app: Flask) -> None:
     app.add_url_rule(
         '/graphql',
         view_func=GraphQLView.as_view(
-            'graphql', schema=schema.graphql_schema, graphiql=True),
+            'graphql',
+            schema=schema.graphql_schema,
+            graphiql=True),
     )
