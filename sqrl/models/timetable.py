@@ -161,6 +161,7 @@ class Course(db.Document):
 
     Instance Attributes:
         id: The full code of the course.
+            Formatted as "{code}-{term}-{session_code}".
         organisation: The Organisation that this course is associated with.
         code: The course code.
         title: The title of this course.
