@@ -9,7 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 def create_app(settings_override: Any = None) -> Flask:
     """
-    Create a Flask application using the app factory pattern. eturn the app
+    Create a Flask application using the app factory pattern. Return the app
     instance.
 
     Args:
