@@ -122,7 +122,9 @@ class Query(graphene.ObjectType):
 
     def resolve_courses_by_id(
             self, info: graphene.ResolveInfo, ids: list[str]) -> list[Course]:
-        """Return a _CourseObject object with the given id."""
+        """Return a list of _CourseObject objects, each with given ids.
+        Courses that do not exist are ignored.
+        """
         courses = []
         for id in ids:
             courses.append(Course.objects.get(id=id))
