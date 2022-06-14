@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 import graphene
 from graphene_mongo import MongoengineObjectType
+import mongoengine
 from flask import current_app
 
 from sqrl.models.common import Time
@@ -123,13 +124,15 @@ class Query(graphene.ObjectType):
     def resolve_courses_by_id(
             self, info: graphene.ResolveInfo, ids: list[str]) -> list[Course]:
         """Return a list of _CourseObject objects, each with given ids.
-        Courses that do not exist are ignored.
+        Courses that do not exist are null.
         """
         courses = []
         for id in ids:
-            course = Course.objects.get(id=id)
-            if course is not None:
+            try:
+                course = Course.objects.get(id=id)
                 courses.append(course)
+            except mongoengine.DoesNotExist:
+                courses.append(None)
         return courses
 
     def resolve_course_by_id(
