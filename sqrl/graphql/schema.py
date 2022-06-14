@@ -93,6 +93,8 @@ class Query(graphene.ObjectType):
     )
     organisations = graphene.ConnectionField(_OrganisationObjectConnection)
 
+    courses_by_id = graphene.List(
+        _CourseObject, ids=graphene.NonNull(graphene.List(graphene.NonNull(graphene.String))))
     course_by_id = graphene.Field(
         _CourseObject, id=graphene.String(required=True))
     courses = graphene.ConnectionField(_CourseObjectConnection)
@@ -117,6 +119,14 @@ class Query(graphene.ObjectType):
     ) -> list[Organisation]:
         """Return a list of _OrganisationObject objects."""
         return list(Organisation.objects.all())
+
+    def resolve_courses_by_id(
+            self, info: graphene.ResolveInfo, ids: list[str]) -> list[Course]:
+        """Return a _CourseObject object with the given id."""
+        courses = []
+        for id in ids:
+            courses.append(Course.objects.get(id=id))
+        return courses
 
     def resolve_course_by_id(
             self, info: graphene.ResolveInfo, id: str) -> Course:
