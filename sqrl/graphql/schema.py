@@ -127,7 +127,9 @@ class Query(graphene.ObjectType):
         """
         courses = []
         for id in ids:
-            courses.append(Course.objects.get(id=id))
+            course = Course.objects.get(id=id)
+            if course is not None:
+                courses.append(course)
         return courses
 
     def resolve_course_by_id(
