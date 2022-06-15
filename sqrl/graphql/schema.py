@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 import graphene
 from graphene_mongo import MongoengineObjectType
+import mongoengine
 from flask import current_app
 
 from sqrl.models.common import Time
@@ -93,6 +94,8 @@ class Query(graphene.ObjectType):
     )
     organisations = graphene.ConnectionField(_OrganisationObjectConnection)
 
+    courses_by_id = graphene.List(
+        _CourseObject, ids=graphene.NonNull(graphene.List(graphene.NonNull(graphene.String))))
     course_by_id = graphene.Field(
         _CourseObject, id=graphene.String(required=True))
     courses = graphene.ConnectionField(_CourseObjectConnection)
@@ -117,6 +120,20 @@ class Query(graphene.ObjectType):
     ) -> list[Organisation]:
         """Return a list of _OrganisationObject objects."""
         return list(Organisation.objects.all())
+
+    def resolve_courses_by_id(
+            self, info: graphene.ResolveInfo, ids: list[str]) -> list[Course]:
+        """Return a list of _CourseObject objects, each with given ids.
+        Courses that do not exist are null.
+        """
+        courses = []
+        for id in ids:
+            try:
+                course = Course.objects.get(id=id)
+                courses.append(course)
+            except mongoengine.DoesNotExist:
+                courses.append(None)
+        return courses
 
     def resolve_course_by_id(
             self, info: graphene.ResolveInfo, id: str) -> Course:
