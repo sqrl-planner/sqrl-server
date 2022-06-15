@@ -157,6 +157,38 @@ class Query(graphene.ObjectType):
         return Timetable.objects.get(id=id)
 
 
+class SetTimetableNameMutation(graphene.Mutation):
+    """Create timetable mutation in the graphql schema."""
+
+    class Arguments:
+        id = graphene.ID(required=True)
+        key = graphene.String(required=True)
+        name = graphene.String(required=True, default_value=None)
+
+    timetable = graphene.Field(_TimetableObject)
+    key = graphene.String()
+
+    def mutate(
+        self,
+        _: graphene.ResolveInfo,
+        id: str,
+        key: str,
+        name: str,
+    ) -> 'SetTimetableNameMutation':
+        """Set a timetable's name"""
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception(f'could not find timetable with id "{id}"')
+
+        if timetable.key != key:
+            raise Exception('the provided timetable key did not match')
+
+        timetable.name = name
+
+        timetable.save()
+        return SetTimetableNameMutation(timetable=timetable)
+
+
 class CreateTimetableMutation(graphene.Mutation):
     """Create timetable mutation in the graphql schema."""
 
@@ -313,6 +345,7 @@ class Mutation(graphene.ObjectType):
     """Mutations in the graphql schema."""
 
     create_timetable = CreateTimetableMutation.Field()
+    set_timetable_name = SetTimetableNameMutation.Field()
     delete_timetable = DeleteTimetableMutation.Field()
     add_sections_timetable = AddSectionsTimetableMutation.Field()
     set_sections_timetable = SetSectionsTimetableMutation.Field()
