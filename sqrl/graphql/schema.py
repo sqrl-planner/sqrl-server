@@ -249,6 +249,39 @@ class DeleteTimetableMutation(graphene.Mutation):
         timetable.delete()
         return DeleteTimetableMutation(timetable=timetable)
 
+class RemoveCourseTimetableMutation(graphene.Mutation):
+    """Remove section from timetable mutation in the graphql schema."""
+
+    class Arguments:
+        id = graphene.ID(required=True)
+        key = graphene.String(required=True)
+        course_id = graphene.String(required=True)
+
+    timetable = graphene.Field(_TimetableObject)
+
+    def mutate(
+        self,
+        _: graphene.ResolveInfo,
+        id: str,
+        key: str,
+        course_id: str,
+    ) -> 'AddSectionsTimetableMutation':
+        """Add sections to a timetable."""
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception(f'could not find timetable with id "{id}"')
+
+        if timetable.key != key:
+            raise Exception('the provided timetable key did not match')
+
+        if course_id not in timetable.sections:
+            timetable.sections[course_id] = []
+        
+        timetable.sections.pop(course_id)
+
+        timetable.save()
+        return RemoveCourseTimetableMutation(timetable=timetable)
+
 
 class AddSectionsTimetableMutation(graphene.Mutation):
     """Add sections to timetable mutation in the graphql schema."""
@@ -364,6 +397,7 @@ class Mutation(graphene.ObjectType):
     create_timetable = CreateTimetableMutation.Field()
     set_timetable_name = SetTimetableNameMutation.Field()
     delete_timetable = DeleteTimetableMutation.Field()
+    remove_course_timetable = RemoveCourseTimetableMutation.Field()
     add_sections_timetable = AddSectionsTimetableMutation.Field()
     set_sections_timetable = SetSectionsTimetableMutation.Field()
 
