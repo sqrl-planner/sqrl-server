@@ -249,6 +249,7 @@ class DeleteTimetableMutation(graphene.Mutation):
         timetable.delete()
         return DeleteTimetableMutation(timetable=timetable)
 
+
 class RemoveCourseTimetableMutation(graphene.Mutation):
     """Remove section from timetable mutation in the graphql schema."""
 
@@ -276,7 +277,7 @@ class RemoveCourseTimetableMutation(graphene.Mutation):
 
         if course_id not in timetable.sections:
             timetable.sections[course_id] = []
-        
+
         timetable.sections.pop(course_id)
 
         timetable.save()
