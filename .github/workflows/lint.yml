@@ -31,3 +31,17 @@ jobs:
           checkName: 'flake8_py3'   # NOTE: this needs to be the same as the job name
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  pydocstyle_py3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9.x
+          architecture: x64
+      - name: Checkout repo
+        uses: actions/checkout@master
+      - name: Install pydocstyle
+        run: pip install pydocstyle
+      - name: Run pydocstyle
+        run: pydocstyle --count .
