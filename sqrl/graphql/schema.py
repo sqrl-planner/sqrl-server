@@ -226,6 +226,36 @@ class CreateTimetableMutation(graphene.Mutation):
         return CreateTimetableMutation(timetable=timetable, key=timetable.key)
 
 
+class DuplicateTimetableMutation(graphene.Mutation):
+    """Delete timetable mutation in the graphql schema."""
+
+    class Arguments:
+        id = graphene.ID(required=True)
+        name = graphene.String(required=False, default_value=None)
+
+    timetable = graphene.Field(_TimetableObject)
+    key = graphene.String()
+
+    def mutate(
+            self, info: graphene.ResolveInfo, id: str, name: Optional[str] = None
+    ) -> 'DuplicateTimetableMutation':
+        """Duplicate a timetable."""
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception(f'could not find timetable with id "{id}"')
+
+        next_timetable = Timetable()
+        if name is not None:
+            next_timetable.name = name
+
+        next_timetable.sections = timetable.sections
+        next_timetable.name = f'Copy of {timetable.name}'
+
+        next_timetable.save()
+
+        return DuplicateTimetableMutation(timetable=next_timetable, key=next_timetable.key)
+
+
 class DeleteTimetableMutation(graphene.Mutation):
     """Delete timetable mutation in the graphql schema."""
 
@@ -251,7 +281,7 @@ class DeleteTimetableMutation(graphene.Mutation):
 
 
 class RemoveCourseTimetableMutation(graphene.Mutation):
-    """Remove section from timetable mutation in the graphql schema."""
+    """Remove course from timetable mutation in the graphql schema."""
 
     class Arguments:
         id = graphene.ID(required=True)
@@ -266,8 +296,8 @@ class RemoveCourseTimetableMutation(graphene.Mutation):
         id: str,
         key: str,
         course_id: str,
-    ) -> 'AddSectionsTimetableMutation':
-        """Add sections to a timetable."""
+    ) -> 'RemoveCourseTimetableMutation':
+        """Remove course from a timetable."""
         timetable = Timetable.objects.get(id=id)
         if timetable is None:
             raise Exception(f'could not find timetable with id "{id}"')
@@ -398,6 +428,7 @@ class Mutation(graphene.ObjectType):
     create_timetable = CreateTimetableMutation.Field()
     set_timetable_name = SetTimetableNameMutation.Field()
     delete_timetable = DeleteTimetableMutation.Field()
+    duplicate_timetable = DuplicateTimetableMutation.Field()
     remove_course_timetable = RemoveCourseTimetableMutation.Field()
     add_sections_timetable = AddSectionsTimetableMutation.Field()
     set_sections_timetable = SetSectionsTimetableMutation.Field()
