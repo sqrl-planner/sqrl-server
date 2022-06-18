@@ -249,6 +249,7 @@ class DuplicateTimetableMutation(graphene.Mutation):
             next_timetable.name = name
 
         next_timetable.sections = timetable.sections
+        next_timetable.name = f'Copy of {timetable.name}'
 
         next_timetable.save()
 
