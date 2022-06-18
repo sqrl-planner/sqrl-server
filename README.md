@@ -35,17 +35,6 @@ sqrl-server uses MongoDB, a NoSQL database program. An instance of MongoDB is al
 
 Alterntively, you can run an instance locally or use a number of database providers. If you do so, create an empty database on your MongoDB instance and update the ``.env`` file with your instance information (host, credentials, and db name).
 
-#### Pulling and syncing course data
-
-If your database is empty, you'll need course information to use sqrl. To pull the latest data from all dataset sources, run
-
-```shell
-flask sync
-```
-The Docker container will automaticlly sync the data on the first-run. You might find it useful to setup a cron job to periodically run this job in production.
-
-Currently, the dataset sources are hardcoded parameters in the [``config/settings.py``](https://github.com/sqrl-planner/sqrl-server/blob/main/config/settings.py) file. You must modify this file directly to customize the data sources.
-
 ## Tools
 
 #### Linting the codebase
