@@ -1,7 +1,6 @@
 """Application settings."""
 import os
 
-from sqrl.data.sources import utsg as utsg_source
 
 SECRET_KEY = os.getenv('SECRET_KEY', None)
 
@@ -17,9 +16,3 @@ MONGODB_SETTINGS = {
     'password': os.getenv('MONGODB_PASSWORD', None),
 }
 
-# Dataset sources
-# TODO: Make this controllable via environment variables
-DATASET_SOURCES = {
-    'utsg-timetable': utsg_source.UTSG_ArtsSci_TimetableDatasetSource(
-        session=None),
-}
