@@ -1,14 +1,6 @@
 # flake8: noqa: F401
-from sqrl.models.timetable import (
-    Organisation,
-    SectionTeachingMethod,
-    SectionDeliveryMode,
-    MeetingDay,
-    Instructor,
-    SectionMeeting,
-    Section,
-    CourseTerm,
-    Course,
-    Campus,
-)
 from sqrl.models.common import Time
+from sqrl.models.timetable import (Campus, Course, CourseTerm, Instructor,
+                                   MeetingDay, Organisation, Section,
+                                   SectionDeliveryMode, SectionMeeting,
+                                   SectionTeachingMethod)

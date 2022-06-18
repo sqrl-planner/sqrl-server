@@ -1,5 +1,6 @@
-import pytest
 from typing import Any
+
+import pytest
 
 from sqrl.utils import int_or_none, nullable_convert
 

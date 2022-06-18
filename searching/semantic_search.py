@@ -1,12 +1,12 @@
 """Asymetrically course searching algorithm using Pre-trained MS MARCO models."""
 import time
 
-import torch
 import numpy as np
+import torch
 from sentence_transformers import SentenceTransformer, util
 
 from sqrl import create_app
-from sqrl.models import Course, Campus
+from sqrl.models import Campus, Course
 
 
 def get_courses() -> list[Course]:

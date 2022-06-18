@@ -1,9 +1,7 @@
 """Gunicorn configuration file."""
-import os
 import multiprocessing
-
+import os
 from distutils.util import strtobool
-
 
 bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
 accesslog = '-'

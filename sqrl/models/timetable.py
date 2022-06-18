@@ -1,10 +1,10 @@
 """Model data classes for timetable."""
-import re
 import math
+import re
 import secrets
 from enum import Enum
-from typing import Optional
 from functools import lru_cache
+from typing import Optional
 
 import petname
 
