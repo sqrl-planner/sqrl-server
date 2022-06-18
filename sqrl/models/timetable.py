@@ -8,7 +8,7 @@ from typing import Optional
 
 import petname
 
-from sqrl.extensions import db
+from sqrl.extensions.db import db
 from sqrl.models.common import Time
 
 

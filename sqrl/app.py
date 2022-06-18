@@ -22,11 +22,15 @@ def create_app(settings_override: Any = None) -> Flask:
 
     init_middleware(app)
 
-    from sqrl import cli, extensions, graphql
+    from sqrl import cli, graphql
 
     graphql.init_app(app)
     cli.init_app(app)
-    extensions.init_app(app)
+
+    from sqrl.extensions.db import db
+    from sqrl.extensions.cors import cors
+    db.init_app(app)
+    cors.init_app(app)
 
     # Register mimetypes
     mimetypes.add_type('text/css', '.css')
