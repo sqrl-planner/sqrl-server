@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "sqrl-server"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Flask = "<2"
+gunicorn = "^20.1.0"
+Flask-Cors = "^3.0.10"
+flask-mongoengine = "^1.0.0"
+graphql-server = {extras = ["flask"], version = "^3.0.0-beta.5"}
+graphene-mongo = "^0.2.14"
+bs4 = "^0.0.1"
+requests = "^2.28.0"
+tqdm = "^4.64.0"
+yaspin = "^2.1.0"
+petname = "^2.6"
+setuptools = "^62.5.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+pytest-mock = "^3.7.0"
+flake8 = "^4.0.1"
+autopep8 = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
