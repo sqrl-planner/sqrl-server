@@ -27,8 +27,8 @@ def create_app(settings_override: Any = None) -> Flask:
     graphql.init_app(app)
     cli.init_app(app)
 
-    from sqrl.extensions.db import db
     from sqrl.extensions.cors import cors
+    from sqrl.extensions.db import db
     db.init_app(app)
     cors.init_app(app)
 
