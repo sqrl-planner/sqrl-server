@@ -1,19 +1,13 @@
 from typing import Any, Optional
 
 import graphene
-from graphene_mongo import MongoengineObjectType
 import mongoengine
 from flask import current_app
+from graphene_mongo import MongoengineObjectType
 
 from sqrl.models.common import Time
-from sqrl.models.timetable import (
-    SectionMeeting,
-    Instructor,
-    Section,
-    Organisation,
-    Course,
-    Timetable,
-)
+from sqrl.models.timetable import (Course, Instructor, Organisation, Section,
+                                   SectionMeeting, Timetable)
 
 
 class _TimeObject(MongoengineObjectType):

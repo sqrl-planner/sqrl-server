@@ -6,8 +6,8 @@ import requests
 from bs4 import BeautifulSoup
 
 from sqrl import models
-from sqrl.utils import nullable_convert, int_or_none
 from sqrl.data.sources import TimetableDatasetSource, TimetableSession
+from sqrl.utils import int_or_none, nullable_convert
 
 
 class UTSG_ArtsSci_TimetableDatasetSource(TimetableDatasetSource):

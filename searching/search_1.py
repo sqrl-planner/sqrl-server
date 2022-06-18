@@ -1,11 +1,10 @@
 """Experiments in course search algorithms."""
-import torch
 import numpy as np
+import torch
 from sentence_transformers import SentenceTransformer
 
 from sqrl.app import create_app
-from sqrl.models import Course, Campus
-
+from sqrl.models import Campus, Course
 
 CAMPUS_NAMES = {
     Campus.ST_GEORGE: 'St George',
