@@ -10,6 +10,8 @@ RUN apt-get update \
   && useradd --create-home python \
   && chown python:python -R /app
 
+RUN chmod -R 777 /usr/local/src
+
 USER python
 
 COPY --chown=python:python pyproject.toml ./
