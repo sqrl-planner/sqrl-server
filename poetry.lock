@@ -218,6 +218,24 @@ WTForms = "*"
 email = ["email-validator"]
 
 [[package]]
+name = "gator-models"
+version = "0.1.0"
+description = "MongoDB models for Gator API"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = false
+
+[package.dependencies]
+flask-mongoengine = "^1.0.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/sqrl-planner/gator-models.git"
+reference = "main"
+resolved_reference = "d43df1aee5acf5741736b6550296b7f69f2781e5"
+
+[[package]]
 name = "graphene"
 version = "3.0b7"
 description = "GraphQL Framework for Python"
@@ -713,7 +731,7 @@ termcolor = ">=1.1.0,<2.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "f0dd489d1077143a46ffc77d3fbc8f7c6578f9e616c5ebda0c495c1a2f8fa5e4"
+content-hash = "f008191aec0d5372214e4807e621398a15d9f4821ff3668a89997df13e320a80"
 
 [metadata.files]
 aniso8601 = [
@@ -826,6 +844,7 @@ flask-wtf = [
     {file = "Flask-WTF-1.0.1.tar.gz", hash = "sha256:34fe5c6fee0f69b50e30f81a3b7ea16aa1492a771fe9ad0974d164610c09a6c9"},
     {file = "Flask_WTF-1.0.1-py3-none-any.whl", hash = "sha256:9d733658c80be551ce7d5bc13c7a7ac0d80df509be1e23827c847d9520f4359a"},
 ]
+gator-models = []
 graphene = [
     {file = "graphene-3.0b7-py2.py3-none-any.whl", hash = "sha256:70293cd3cd301eb8ab69f43b18bff0223bbb458ed74904bd3dffa69f802bf6ef"},
     {file = "graphene-3.0b7.tar.gz", hash = "sha256:03e1cb640ad48669eaf5a4228be216f7dce72b6ca3e9b1dd568e429001897642"},

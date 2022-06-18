@@ -18,6 +18,7 @@ tqdm = "^4.64.0"
 yaspin = "^2.1.0"
 petname = "^2.6"
 setuptools = "^62.5.0"
+gator-models = {git = "https://github.com/sqrl-planner/gator-models.git", rev = "main"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
