@@ -1,5 +1,4 @@
 """Application settings."""
-from distutils.util import strtobool
 import os
 from sqrl.data.sources import utsg as utsg_source
 
@@ -9,7 +8,6 @@ SECRET_KEY = os.getenv('SECRET_KEY', None)
 SERVER_NAME = os.getenv(
     'SERVER_NAME', 'localhost:{0}'.format(os.getenv('PORT', '8000')))
 
-# TODO: should default in the case that variable can't be fetched be prod or dev
 ENV = os.getenv('FLASK_ENV', 'production')
 
 # MongoDB configuration

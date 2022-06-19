@@ -7,7 +7,7 @@ from sqrl.graphql.schema import schema
 
 def init_app(app: Flask) -> None:
     """Initialise GraphQL with a flask app context."""
-    on_dev = app.config.get('ENV') == 'development'
+    on_dev = app.config.get('ENV', 'production') == 'development'
     prod_rules = specified_rules + tuple([NoSchemaIntrospectionCustomRule])
     app.add_url_rule(
         '/graphql',
