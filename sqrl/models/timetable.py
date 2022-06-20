@@ -1,14 +1,14 @@
 """Model data classes for timetable."""
-import re
 import math
+import re
 import secrets
 from enum import Enum
-from typing import Optional
 from functools import lru_cache
+from typing import Optional
 
 import petname
 
-from sqrl.extensions import db
+from sqrl.extensions.db import db
 from sqrl.models.common import Time
 
 

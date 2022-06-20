@@ -1,5 +1,5 @@
 """Common models."""
-from sqrl.extensions import db
+from sqrl.extensions.db import db
 
 
 class Time(db.EmbeddedDocument):

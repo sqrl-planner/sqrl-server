@@ -1,18 +1,13 @@
 from typing import Any, Optional
 
 import graphene
-from graphene_mongo import MongoengineObjectType
+import mongoengine
 from flask import current_app
+from graphene_mongo import MongoengineObjectType
 
 from sqrl.models.common import Time
-from sqrl.models.timetable import (
-    SectionMeeting,
-    Instructor,
-    Section,
-    Organisation,
-    Course,
-    Timetable,
-)
+from sqrl.models.timetable import (Course, Instructor, Organisation, Section,
+                                   SectionMeeting, Timetable)
 
 
 class _TimeObject(MongoengineObjectType):
@@ -93,6 +88,8 @@ class Query(graphene.ObjectType):
     )
     organisations = graphene.ConnectionField(_OrganisationObjectConnection)
 
+    courses_by_id = graphene.List(
+        _CourseObject, ids=graphene.NonNull(graphene.List(graphene.NonNull(graphene.String))))
     course_by_id = graphene.Field(
         _CourseObject, id=graphene.String(required=True))
     courses = graphene.ConnectionField(_CourseObjectConnection)
@@ -117,6 +114,20 @@ class Query(graphene.ObjectType):
     ) -> list[Organisation]:
         """Return a list of _OrganisationObject objects."""
         return list(Organisation.objects.all())
+
+    def resolve_courses_by_id(
+            self, info: graphene.ResolveInfo, ids: list[str]) -> list[Course]:
+        """Return a list of _CourseObject objects, each with given ids.
+        Courses that do not exist are null.
+        """
+        courses = []
+        for id in ids:
+            try:
+                course = Course.objects.get(id=id)
+                courses.append(course)
+            except mongoengine.DoesNotExist:
+                courses.append(None)
+        return courses
 
     def resolve_course_by_id(
             self, info: graphene.ResolveInfo, id: str) -> Course:
@@ -157,6 +168,38 @@ class Query(graphene.ObjectType):
         return Timetable.objects.get(id=id)
 
 
+class SetTimetableNameMutation(graphene.Mutation):
+    """Create timetable mutation in the graphql schema."""
+
+    class Arguments:
+        id = graphene.ID(required=True)
+        key = graphene.String(required=True)
+        name = graphene.String(required=True, default_value=None)
+
+    timetable = graphene.Field(_TimetableObject)
+    key = graphene.String()
+
+    def mutate(
+        self,
+        _: graphene.ResolveInfo,
+        id: str,
+        key: str,
+        name: str,
+    ) -> 'SetTimetableNameMutation':
+        """Set a timetable's name"""
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception(f'could not find timetable with id "{id}"')
+
+        if timetable.key != key:
+            raise Exception('the provided timetable key did not match')
+
+        timetable.name = name
+
+        timetable.save()
+        return SetTimetableNameMutation(timetable=timetable)
+
+
 class CreateTimetableMutation(graphene.Mutation):
     """Create timetable mutation in the graphql schema."""
 
@@ -175,6 +218,36 @@ class CreateTimetableMutation(graphene.Mutation):
             timetable.name = name
         timetable.save()
         return CreateTimetableMutation(timetable=timetable, key=timetable.key)
+
+
+class DuplicateTimetableMutation(graphene.Mutation):
+    """Delete timetable mutation in the graphql schema."""
+
+    class Arguments:
+        id = graphene.ID(required=True)
+        name = graphene.String(required=False, default_value=None)
+
+    timetable = graphene.Field(_TimetableObject)
+    key = graphene.String()
+
+    def mutate(
+            self, info: graphene.ResolveInfo, id: str, name: Optional[str] = None
+    ) -> 'DuplicateTimetableMutation':
+        """Duplicate a timetable."""
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception(f'could not find timetable with id "{id}"')
+
+        next_timetable = Timetable()
+        if name is not None:
+            next_timetable.name = name
+
+        next_timetable.sections = timetable.sections
+        next_timetable.name = f'Copy of {timetable.name}'
+
+        next_timetable.save()
+
+        return DuplicateTimetableMutation(timetable=next_timetable, key=next_timetable.key)
 
 
 class DeleteTimetableMutation(graphene.Mutation):
@@ -199,6 +272,40 @@ class DeleteTimetableMutation(graphene.Mutation):
 
         timetable.delete()
         return DeleteTimetableMutation(timetable=timetable)
+
+
+class RemoveCourseTimetableMutation(graphene.Mutation):
+    """Remove course from timetable mutation in the graphql schema."""
+
+    class Arguments:
+        id = graphene.ID(required=True)
+        key = graphene.String(required=True)
+        course_id = graphene.String(required=True)
+
+    timetable = graphene.Field(_TimetableObject)
+
+    def mutate(
+        self,
+        _: graphene.ResolveInfo,
+        id: str,
+        key: str,
+        course_id: str,
+    ) -> 'RemoveCourseTimetableMutation':
+        """Remove course from a timetable."""
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None:
+            raise Exception(f'could not find timetable with id "{id}"')
+
+        if timetable.key != key:
+            raise Exception('the provided timetable key did not match')
+
+        if course_id not in timetable.sections:
+            timetable.sections[course_id] = []
+
+        timetable.sections.pop(course_id)
+
+        timetable.save()
+        return RemoveCourseTimetableMutation(timetable=timetable)
 
 
 class AddSectionsTimetableMutation(graphene.Mutation):
@@ -313,7 +420,10 @@ class Mutation(graphene.ObjectType):
     """Mutations in the graphql schema."""
 
     create_timetable = CreateTimetableMutation.Field()
+    set_timetable_name = SetTimetableNameMutation.Field()
     delete_timetable = DeleteTimetableMutation.Field()
+    duplicate_timetable = DuplicateTimetableMutation.Field()
+    remove_course_timetable = RemoveCourseTimetableMutation.Field()
     add_sections_timetable = AddSectionsTimetableMutation.Field()
     set_sections_timetable = SetSectionsTimetableMutation.Field()
 

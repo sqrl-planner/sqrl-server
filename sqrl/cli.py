@@ -1,10 +1,10 @@
 """Custom commands used with the Flask CLI."""
 import click
-from yaspin import yaspin
 from flask import Flask, current_app
 from flask.cli import with_appcontext
+from yaspin import yaspin
 
-from sqrl.extensions import db
+from sqrl.extensions.db import db
 
 
 def init_app(app: Flask) -> None:

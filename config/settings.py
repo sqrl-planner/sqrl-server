@@ -1,7 +1,7 @@
 """Application settings."""
 import os
-from sqrl.data.sources import utsg as utsg_source
 
+from sqrl.data.sources import utsg as utsg_source
 
 SECRET_KEY = os.getenv('SECRET_KEY', None)
 

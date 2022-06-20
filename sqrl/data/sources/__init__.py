@@ -1,6 +1,6 @@
 'A module containing dataset sources.'
-from dataclasses import dataclass
 from abc import ABC, abstractclassmethod, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Optional, Union
 
 from flask_mongoengine import MongoEngine

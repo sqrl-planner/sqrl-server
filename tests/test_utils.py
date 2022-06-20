@@ -1,5 +1,6 @@
-import pytest
 from typing import Any
+
+import pytest
 
 from sqrl.utils import int_or_none, nullable_convert
 
@@ -25,5 +26,4 @@ def test_int_or_none_integer():
 
 
 def test_int_or_none_invalid():
-    assert int_or_none(None) == None
-
+    assert int_or_none(None) is None

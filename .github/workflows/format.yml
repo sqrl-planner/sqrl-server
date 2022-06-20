@@ -1,8 +1,5 @@
-name: autopep8
-on:
-  push:
-    paths:
-      - '*.py'
+name: Format
+on: pull_request
 jobs:
   autopep8:
     # Check if the PR is not raised by this workflow and is not from a fork
@@ -28,8 +25,18 @@ jobs:
           title: Fixes by autopep8 action
           body: This is an auto-generated PR with fixes by autopep8.
           labels: autopep8, automated pr
-          reviewers: galacticglum
+          reviewers: peter-evans
           branch: ${{ steps.vars.outputs.branch-name }}
       - name: Fail if autopep8 made changes
         if: steps.autopep8.outputs.exit-code == 2
         run: exit 1
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - uses: isort/isort-action@master
+        with:
+            requirementsFiles: "requirements.txt requirements-test.txt"
