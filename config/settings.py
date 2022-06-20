@@ -8,6 +8,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', None)
 SERVER_NAME = os.getenv(
     'SERVER_NAME', 'localhost:{0}'.format(os.getenv('PORT', '8000')))
 
+ENV = os.getenv('FLASK_ENV', 'production')
+
 # MongoDB configuration
 MONGODB_SETTINGS = {
     'db': os.getenv('MONGODB_DB', 'sqrl'),
