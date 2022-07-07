@@ -158,17 +158,17 @@ pyflakes = ">=2.4.0,<2.5.0"
 
 [[package]]
 name = "flask"
-version = "1.1.4"
+version = "1.1.2"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.dependencies]
-click = ">=5.1,<8.0"
-itsdangerous = ">=0.24,<2.0"
-Jinja2 = ">=2.10.1,<3.0"
-Werkzeug = ">=0.15,<2.0"
+click = ">=5.1"
+itsdangerous = ">=0.24"
+Jinja2 = ">=2.10.1"
+Werkzeug = ">=0.15"
 
 [package.extras]
 dev = ["pytest", "coverage", "tox", "sphinx", "pallets-sphinx-themes", "sphinxcontrib-log-cabinet", "sphinx-issues"]
@@ -216,6 +216,20 @@ WTForms = "*"
 
 [package.extras]
 email = ["email-validator"]
+
+[[package]]
+name = "gator-client"
+version = "0.1.1"
+description = "Web client for the Gator API"
+category = "main"
+optional = false
+python-versions = ">=3.9,<4.0"
+
+[package.dependencies]
+certifi = ">=2022.6.15,<2023.0.0"
+gator-models = ">=1.1.2,<2.0.0"
+pytest-httpserver = ">=1.0.4,<2.0.0"
+urllib3 = ">=1.26.9,<2.0.0"
 
 [[package]]
 name = "gator-models"
@@ -581,6 +595,22 @@ pytest = ">=4.6"
 testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtualenv"]
 
 [[package]]
+name = "pytest-httpserver"
+version = "1.0.4"
+description = "pytest-httpserver is a httpserver for pytest"
+category = "main"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[package.dependencies]
+Werkzeug = ">=2.0.0"
+
+[package.extras]
+dev = ["autopep8", "coverage", "flake8 (>4.0.0)", "ipdb", "mypy", "pytest-cov", "pytest", "reno", "requests", "sphinx", "sphinx-rtd-theme", "types-requests"]
+test = ["coverage", "flake8 (>4.0.0)", "mypy", "pytest-cov", "pytest", "requests", "types-requests"]
+doc = ["reno", "sphinx", "sphinx-rtd-theme"]
+
+[[package]]
 name = "pytest-mock"
 version = "3.7.0"
 description = "Thin-wrapper around the mock package for easier use with pytest"
@@ -715,14 +745,13 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "werkzeug"
-version = "1.0.1"
+version = "2.0.3"
 description = "The comprehensive WSGI web application library."
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.6"
 
 [package.extras]
-dev = ["pytest", "pytest-timeout", "coverage", "tox", "sphinx", "pallets-sphinx-themes", "sphinx-issues"]
 watchdog = ["watchdog"]
 
 [[package]]
@@ -754,7 +783,7 @@ termcolor = ">=1.1.0,<2.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6e119d018760e2aeabfa81df3852bad35637df5a29b53abb9810b5e2ca70fcfb"
+content-hash = "21ad896549e5ba087337155ea65b6d10056c22de35d44ca4ba11c45ce2f3170e"
 
 [metadata.files]
 aniso8601 = [
@@ -852,8 +881,8 @@ flake8 = [
     {file = "flake8-4.0.1.tar.gz", hash = "sha256:806e034dda44114815e23c16ef92f95c91e4c71100ff52813adf7132a6ad870d"},
 ]
 flask = [
-    {file = "Flask-1.1.4-py2.py3-none-any.whl", hash = "sha256:c34f04500f2cbbea882b1acb02002ad6fe6b7ffa64a6164577995657f50aed22"},
-    {file = "Flask-1.1.4.tar.gz", hash = "sha256:0fbeb6180d383a9186d0d6ed954e0042ad9f18e0e8de088b2b419d526927d196"},
+    {file = "Flask-1.1.2-py2.py3-none-any.whl", hash = "sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557"},
+    {file = "Flask-1.1.2.tar.gz", hash = "sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060"},
 ]
 flask-cors = [
     {file = "Flask-Cors-3.0.10.tar.gz", hash = "sha256:b60839393f3b84a0f3746f6cdca56c1ad7426aa738b70d6c61375857823181de"},
@@ -866,6 +895,10 @@ flask-mongoengine = [
 flask-wtf = [
     {file = "Flask-WTF-1.0.1.tar.gz", hash = "sha256:34fe5c6fee0f69b50e30f81a3b7ea16aa1492a771fe9ad0974d164610c09a6c9"},
     {file = "Flask_WTF-1.0.1-py3-none-any.whl", hash = "sha256:9d733658c80be551ce7d5bc13c7a7ac0d80df509be1e23827c847d9520f4359a"},
+]
+gator-client = [
+    {file = "gator-client-0.1.1.tar.gz", hash = "sha256:3261cb9b91de66a7a87ed5f1ed719c39bec5df757b57f003d4c190d936af05f0"},
+    {file = "gator_client-0.1.1-py3-none-any.whl", hash = "sha256:1970343583b7950104aea49f8e1d3e87e52124ffd348676edb6fb308309a3368"},
 ]
 gator-models = [
     {file = "gator-models-1.1.2.tar.gz", hash = "sha256:5707ba4e2e1c124eb44597224ece2c966e8135e1c8b5d8e3bd7391d66d1a041f"},
@@ -1129,6 +1162,10 @@ pytest-cov = [
     {file = "pytest-cov-3.0.0.tar.gz", hash = "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"},
     {file = "pytest_cov-3.0.0-py3-none-any.whl", hash = "sha256:578d5d15ac4a25e5f961c938b85a05b09fdaae9deef3bb6de9a6e766622ca7a6"},
 ]
+pytest-httpserver = [
+    {file = "pytest_httpserver-1.0.4-py3-none-any.whl", hash = "sha256:17396350d7c0dec067bc8c5ceca7e1137aa0e3395468a9c179bdfc5ede9027a5"},
+    {file = "pytest_httpserver-1.0.4.tar.gz", hash = "sha256:6de464ba5f74628d6182ebbdcb56783edf2c9b0caf598dc35c11f014f24a3f0d"},
+]
 pytest-mock = [
     {file = "pytest-mock-3.7.0.tar.gz", hash = "sha256:5112bd92cc9f186ee96e1a92efc84969ea494939c3aead39c50f421c4cc69534"},
     {file = "pytest_mock-3.7.0-py3-none-any.whl", hash = "sha256:6cff27cec936bf81dc5ee87f07132b807bcda51106b5ec4b90a04331cba76231"},
@@ -1177,8 +1214,8 @@ urllib3 = [
     {file = "urllib3-1.26.9.tar.gz", hash = "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"},
 ]
 werkzeug = [
-    {file = "Werkzeug-1.0.1-py2.py3-none-any.whl", hash = "sha256:2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43"},
-    {file = "Werkzeug-1.0.1.tar.gz", hash = "sha256:6c80b1e5ad3665290ea39320b91e1be1e0d5f60652b964a3070216de83d2e47c"},
+    {file = "Werkzeug-2.0.3-py3-none-any.whl", hash = "sha256:1421ebfc7648a39a5c58c601b154165d05cf47a3cd0ccb70857cbdacf6c8f2b8"},
+    {file = "Werkzeug-2.0.3.tar.gz", hash = "sha256:b863f8ff057c522164b6067c9e28b041161b4be5ba4d0daceeaa50a163822d3c"},
 ]
 wtforms = [
     {file = "WTForms-3.0.1-py3-none-any.whl", hash = "sha256:837f2f0e0ca79481b92884962b914eba4e72b7a2daaf1f939c890ed0124b834b"},

@@ -24,6 +24,8 @@ petname = "^2.6"
 setuptools = "^62.5.0"
 gator-models = "^1.1.2"
 MarkupSafe = "2.0.1"
+gator-client = "^0.1.1"
+Werkzeug = "2.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"

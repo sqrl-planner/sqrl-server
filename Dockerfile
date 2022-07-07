@@ -36,8 +36,6 @@ COPY --chown=python:python . .
 RUN if [ "${FLASK_ENV}" != "development" ]; then \
   ln -s /public /app/public && rm -rf /app/public; fi
 
-RUN pip3 install --user --no-cache-dir .  # run setup.py
-
 EXPOSE 8000
 
 # Project dependencies

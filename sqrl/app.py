@@ -16,7 +16,7 @@ def create_app(settings_override: Any = None) -> Flask:
         settings_override: Override settings
     """
     app = Flask(__name__, static_folder='../public', static_url_path="")
-    app.config.from_object('config.settings')
+    app.config.from_object('config.app_settings')
     if settings_override:
         app.config.update(settings_override)
 
@@ -27,8 +27,10 @@ def create_app(settings_override: Any = None) -> Flask:
 
     from sqrl.extensions.cors import cors
     from sqrl.extensions.db import db
+    from sqrl.extensions.gator_client import gator_client
     db.init_app(app)
     cors.init_app(app)
+    gator_client.init_app(app)
 
     # Register mimetypes
     mimetypes.add_type('text/css', '.css')

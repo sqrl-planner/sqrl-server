@@ -1,4 +1,5 @@
 """Course query (proxy for gator API)."""
+from types import SimpleNamespace
 from typing import Any
 
 import graphene
@@ -6,7 +7,8 @@ import mongoengine
 from flask import current_app
 from gator.models.timetable import Organisation, Course
 
-from sqrl.graphql.objects.timetable import CourseObject, OrganisationObject
+from sqrl.extensions.gator_client import gator_client
+from sqrl.graphql.objects.timetable import CourseObject, PaginatedCoursesObject, OrganisationObject, PaginatedOrganisationsObject
 
 
 class CourseQuery(graphene.ObjectType):
@@ -15,56 +17,49 @@ class CourseQuery(graphene.ObjectType):
     organisation_by_code = graphene.Field(
         OrganisationObject, code=graphene.String(required=True)
     )
-    # organisations = graphene.ConnectionField(_OrganisationObjectConnection)
+    organisations = graphene.Field(PaginatedOrganisationsObject)
 
-    courses_by_id = graphene.List(
-        CourseObject,
-        ids=graphene.NonNull(graphene.List(graphene.NonNull(graphene.String))))
+    courses_by_id = graphene.Field(
+        PaginatedCoursesObject,
+        ids=graphene.NonNull(graphene.List(graphene.NonNull(graphene.String)))
+    )
     course_by_id = graphene.Field(
         CourseObject, id=graphene.String(required=True))
-    # courses = graphene.ConnectionField(_CourseObjectConnection)
-    search_courses = graphene.List(
-        CourseObject,
-        query=graphene.String(required=True),
-        offset=graphene.Int(required=False, default_value=0),
-        limit=graphene.Int(required=False, default_value=25),
-    )
+    courses = graphene.Field(PaginatedCoursesObject)
+    # search_courses = graphene.List(
+    #     CourseObject,
+    #     query=graphene.String(required=True),
+    #     offset=graphene.Int(required=False, default_value=0),
+    #     limit=graphene.Int(required=False, default_value=25),
+    # )
 
     def resolve_organisation_by_code(
         self, info: graphene.ResolveInfo, code: str
     ) -> Organisation:
-        """Return an _OrganisationObject object with the given code."""
-        return Organisation.objects.get(code=code)
+        """Return an Organisation with the given code."""
+        return gator_client.get_organisation(code)
 
     def resolve_organisations(
         self, info: graphene.ResolveInfo, **kwargs: Any
-    ) -> list[Organisation]:
-        """Return a list of _OrganisationObject objects."""
-        return list(Organisation.objects.all())
+    ) -> SimpleNamespace:
+        """Return a paginated list of Organisations."""
+        return gator_client.get_organisations()
 
     def resolve_courses_by_id(
             self, info: graphene.ResolveInfo, ids: list[str]) -> list[Course]:
-        """Return a list of _CourseObject objects, each with given ids.
-        Courses that do not exist are null.
-        """
-        courses = []
-        for id in ids:
-            try:
-                course = Course.objects.get(id=id)
-                courses.append(course)
-            except mongoengine.DoesNotExist:
-                courses.append(None)
-        return courses
+        """Return a paginated list of Courses filtered by the given ids."""
+        return gator_client.get_courses(ids=ids)
 
     def resolve_course_by_id(
             self, info: graphene.ResolveInfo, id: str) -> Course:
         """Return a _CourseObject object with the given id."""
-        return Course.objects.get(id=id)
+        return gator_client.get_course(id)
 
     def resolve_courses(self, info: graphene.ResolveInfo,
                         **kwargs: Any) -> list[Course]:
         """Return a list of _CourseObject objects."""
-        return list(Course.objects.all())
+        gator_client.client._request('GET', '/courses/')
+        return gator_client.get_courses()
 
     def resolve_search_courses(
         self, info: graphene.ResolveInfo, query: str, offset: int, limit: int

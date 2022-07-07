@@ -44,11 +44,25 @@ class OrganisationObject(MongoengineObjectType):
         model = Organisation
 
 
+class PaginatedOrganisationsObject(graphene.ObjectType):
+    """A paginated list of organisations in the graphql schema."""
+
+    organisations = graphene.List(OrganisationObject)
+    last_id = graphene.String()
+
+
 class CourseObject(MongoengineObjectType):
     """A course in the graphql schema."""
 
     class Meta:
         model = Course
+
+
+class PaginatedCoursesObject(graphene.ObjectType):
+    """A paginated list of courses in the graphql schema."""
+
+    courses = graphene.List(CourseObject)
+    last_id = graphene.String()
 
 
 class UserTimetableObject(MongoengineObjectType):
