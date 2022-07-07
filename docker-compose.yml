@@ -28,9 +28,17 @@ services:
       - 27018:27018
     volumes:
       - mongodb:/data/db
+    deploy:
+      resources:
+        limits:
+          cpus: "${DOCKER_MONGODB_CPUS:-0}"
+          memory: "${DOCKER_MONGODB_MEMORY:-0}"
+    networks:
+      - ${DOCKER_NETWORK:-default}
 
   web:
     <<: *default-app
+    hostname: sqrl_server
     deploy:
       resources:
         limits:
@@ -46,6 +54,14 @@ services:
       - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:8000"
     links:
       - mongodb
+    networks:
+      - ${DOCKER_NETWORK:-default}
+      - sqrl-shared-net
 
 volumes:
   mongodb: {}
+
+networks:
+  sqrl-shared-net:
+    name: sqrl-shared-net
+    driver: bridge

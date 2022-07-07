@@ -1,5 +1,4 @@
 """Entrypoint for the Flask app."""
-import mimetypes
 from typing import Any
 
 from flask import Flask
@@ -25,16 +24,8 @@ def create_app(settings_override: Any = None) -> Flask:
     from sqrl import graphql
     graphql.init_app(app)
 
-    from sqrl.extensions.cors import cors
-    from sqrl.extensions.db import db
-    from sqrl.extensions.gator_client import gator_client
-    db.init_app(app)
-    cors.init_app(app)
-    gator_client.init_app(app)
-
-    # Register mimetypes
-    mimetypes.add_type('text/css', '.css')
-    mimetypes.add_type('text/javascript', '.js')
+    import sqrl.extensions as extensions
+    extensions.init_app(app)
 
     return app
 

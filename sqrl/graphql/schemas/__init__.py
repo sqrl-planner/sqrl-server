@@ -1,10 +1,18 @@
 import graphene
 
+from sqrl.graphql.schemas.organisation import OrganisationQuery
 from sqrl.graphql.schemas.course import CourseQuery
 from sqrl.graphql.schemas.timetable import TimetableQuery, TimetableMutation
 
-ALL_QUERIES = [CourseQuery, TimetableQuery]
-ALL_MUTATIONS = [TimetableMutation]
+ALL_QUERIES = [
+    OrganisationQuery,
+    CourseQuery,
+    TimetableQuery
+]
+
+ALL_MUTATIONS = [
+    TimetableMutation
+]
 
 # NOTE: To add a new query schema, make AppQuery inherit from your custom
 # Query class or add it to the list of ALL_QUERIES.

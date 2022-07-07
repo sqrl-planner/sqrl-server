@@ -3,7 +3,7 @@ import secrets
 
 import petname
 
-from sqrl.extensions.db import db
+from sqrl.extensions import db
 
 
 class UserTimetable(db.Document):
