@@ -22,10 +22,8 @@ def create_app(settings_override: Any = None) -> Flask:
 
     init_middleware(app)
 
-    from sqrl import cli, graphql
-
+    from sqrl import graphql
     graphql.init_app(app)
-    cli.init_app(app)
 
     from sqrl.extensions.cors import cors
     from sqrl.extensions.db import db
