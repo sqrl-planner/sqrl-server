@@ -17,7 +17,6 @@ x-app: &default-app
 services:
   mongodb:
     image: mongo:latest
-    container_name: mongodb
     restart: always
     env_file:
       - ".env"
@@ -26,7 +25,7 @@ services:
         MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
         MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     ports:
-      - 27017:27017
+      - 27018:27018
     volumes:
       - mongodb:/data/db
 
