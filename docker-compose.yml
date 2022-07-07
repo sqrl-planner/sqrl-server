@@ -34,7 +34,7 @@ services:
           cpus: "${DOCKER_MONGODB_CPUS:-0}"
           memory: "${DOCKER_MONGODB_MEMORY:-0}"
     networks:
-      - ${DOCKER_NETWORK:-default}
+      - sqrl-shared-net
 
   web:
     <<: *default-app
@@ -55,7 +55,6 @@ services:
     links:
       - mongodb
     networks:
-      - ${DOCKER_NETWORK:-default}
       - sqrl-shared-net
 
 volumes:
