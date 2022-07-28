@@ -164,8 +164,17 @@ class Query(graphene.ObjectType):
 
     def resolve_timetable_by_id(
             self, _: graphene.ResolveInfo, id: str) -> Timetable:
-        """Return a Timetable object with the given id."""
-        return Timetable.objects.get(id=id)
+        """Get a timetable by id.
+
+        Returns:
+            A Timetable object with the given id or None if it does not exist
+            or has been deleted.
+        """
+        timetable = Timetable.objects.get(id=id)
+        if timetable is None or timetable.deleted:
+            return None
+        else:
+            return timetable
 
 
 class SetTimetableNameMutation(graphene.Mutation):
