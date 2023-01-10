@@ -1,4 +1,4 @@
-FROM python:3.9.0-slim-buster AS app
+FROM python:3.9.0-slim-buster as APP
 
 WORKDIR /app
 
@@ -39,6 +39,8 @@ RUN if [ "${FLASK_ENV}" != "development" ]; then \
 EXPOSE 8000
 
 # Project dependencies
-RUN POETRY_VIRTUALENVS_CREATE=false poetry install --no-interaction --no-ansi
+RUN poetry install --no-interaction --no-ansi
 
-CMD ["gunicorn", "-c", "python:config.gunicorn", "sqrl.app:create_app()"]
+# Use poetry to start a gunicorn server
+CMD ["poetry", "run",\
+     "gunicorn", "-c", "python:config.gunicorn", "sqrl.app:create_app()"]
