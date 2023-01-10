@@ -22,12 +22,12 @@ RUN chmod 0755 bin/* && bin/poetry-install
 
 ARG FLASK_ENV="production"
 ENV FLASK_ENV="${FLASK_ENV}" \
-    FLASK_APP="sqrl.app" \
-    FLASK_SKIP_DOTENV="true" \
-    PYTHONUNBUFFERED="true" \
-    PYTHONPATH="." \
-    PATH="${PATH}:/home/python/.local/bin" \
-    USER="python"
+  FLASK_APP="sqrl.app" \
+  FLASK_SKIP_DOTENV="true" \
+  PYTHONUNBUFFERED="true" \
+  PYTHONPATH="." \
+  PATH="${PATH}:/home/python/.local/bin" \
+  USER="python"
 
 COPY --chown=python:python . .
 
@@ -39,6 +39,7 @@ RUN pip3 install --user --no-cache-dir .  # run setup.py
 EXPOSE 8000
 
 # Project dependencies
+RUN poetry run pip install setuptools==62.6.0
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --no-interaction --no-ansi
 
 CMD ["gunicorn", "-c", "python:config.gunicorn", "sqrl.app:create_app()"]
