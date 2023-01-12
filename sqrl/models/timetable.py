@@ -246,3 +246,9 @@ class Timetable(db.Document):
     sections: dict[str, list[str]] = db.MapField(
         db.ListField(db.StringField()), default=dict)
     deleted: bool = db.BooleanField(default=False)
+    # Sessions have two possibilities:
+    #  - they are the normal fall–winter session
+    #  - they are the summer session
+    # Sessions are represented as a 6 character string, where the first 4 characters are the year and the last two characters are the month in which the session starts.
+    session: str = db.StringField(required=True, default='202209')
+    schema_version: int = db.IntField(required=True, default=2)
