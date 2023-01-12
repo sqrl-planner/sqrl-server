@@ -214,17 +214,21 @@ class CreateTimetableMutation(graphene.Mutation):
 
     class Arguments:
         name = graphene.String(required=False, default_value=None)
+        session = graphene.String(required=False, default_value=None)
 
     timetable = graphene.Field(_TimetableObject)
     key = graphene.String()
 
     def mutate(
-        self, info: graphene.ResolveInfo, name: Optional[str] = None
+        self, info: graphene.ResolveInfo, name: Optional[str],
+        session: Optional[str] = None
     ) -> 'CreateTimetableMutation':
         """Create a timetable."""
         timetable = Timetable()
         if name is not None:
             timetable.name = name
+        if session is not None:
+            timetable.session = session
         timetable.save()
         return CreateTimetableMutation(timetable=timetable, key=timetable.key)
 
