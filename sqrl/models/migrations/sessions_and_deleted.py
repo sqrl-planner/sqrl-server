@@ -15,7 +15,4 @@ def migrate():
         timetables = list(Timetable.objects.all())
         print(
             f'Migrated {len(timetables)} timetables in {end_time - start_time} seconds.')
-        return timetables 
-    
-if __name__ == "__main__":
-    migrate()
+        return timetables
