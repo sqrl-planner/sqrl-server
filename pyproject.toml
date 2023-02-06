@@ -56,3 +56,7 @@ enableTypeIgnoreComments = true
 
 # This is required as the CI pre-commit does not download required modules
 reportMissingImports = "none"
+
+[tool.pydocstyle]
+convention = "google"
+match-dir = "(?!searching|config|tests).*"
