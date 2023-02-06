@@ -1,7 +1,6 @@
 """Application settings."""
 import os
 
-
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 SERVER_NAME = os.getenv('SERVER_NAME')

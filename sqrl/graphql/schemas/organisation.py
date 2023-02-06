@@ -1,12 +1,13 @@
 """Orgaisation query (proxied from Gator API)."""
-from typing import Any
 from types import SimpleNamespace
+from typing import Any
 
 import graphene
 from gator.core.models.timetable import Organisation
 
 from sqrl.extensions.gator_client import gator_client
-from sqrl.graphql.objects import OrganisationObject, PaginatedOrganisationsObject
+from sqrl.graphql.objects import (OrganisationObject,
+                                  PaginatedOrganisationsObject)
 
 
 class OrganisationQuery(graphene.ObjectType):

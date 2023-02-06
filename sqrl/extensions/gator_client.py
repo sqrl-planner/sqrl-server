@@ -1,14 +1,13 @@
 """Gator client extension."""
-from typing import Optional, Any
+from typing import Any, Optional
 
 from flask import Flask
 from gator.api.client import GatorClient
 
 
 class FlaskGatorClient:
-    """Thin wrapper around GatorClient to allow for configuration through
-    Flask app.
-    """
+    """Thin wrapper around GatorClient to allow access in Flask."""
+
     app: Optional[Flask]
     client: GatorClient
 
@@ -32,8 +31,7 @@ class FlaskGatorClient:
         )
 
     def __getattr__(self, attr: str) -> Any:
-        """A proxy attribute getter for the Gator client this
-        extension wraps."""
+        """A proxy attribute getter for the instance this extension wraps."""
         return getattr(self.client, attr)
 
 

@@ -1,6 +1,6 @@
 """Course query (proxied from Gator API)."""
-from typing import Optional
 from types import SimpleNamespace
+from typing import Optional
 
 import graphene
 from flask import current_app
