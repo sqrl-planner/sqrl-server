@@ -25,12 +25,11 @@ repos:
     rev: 6.3.0
     hooks:
       - id: pydocstyle
-        exclude: ^(tests/)
+        exclude: ^tests/|^searching/|^config/
         args:
           - --source
           - --explain
           - --convention=google
-          - --match-dir="(?!searching|config|tests).*"
         additional_dependencies: ["toml"]
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.3.1
