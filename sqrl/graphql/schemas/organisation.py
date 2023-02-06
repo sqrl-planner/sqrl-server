@@ -3,7 +3,7 @@ from typing import Any
 from types import SimpleNamespace
 
 import graphene
-from gator.models.timetable import Organisation
+from gator.core.models.timetable import Organisation
 
 from sqrl.extensions.gator_client import gator_client
 from sqrl.graphql.objects import OrganisationObject, PaginatedOrganisationsObject

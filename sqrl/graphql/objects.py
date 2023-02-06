@@ -4,9 +4,8 @@ from typing import Any
 import graphene
 from graphene_mongo import MongoengineObjectType
 
-from gator.models.common import Time
-from gator.models.timetable import (Course, Instructor, Organisation, Section,
-                                    SectionMeeting)
+from gator.core.models.common import Time
+from gator.core.models.timetable import (Course, Instructor, Organisation, Section, SectionMeeting)
 
 from sqrl.models import UserTimetable
 

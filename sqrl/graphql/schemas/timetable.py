@@ -3,7 +3,7 @@ from typing import Optional
 
 import graphene
 
-from gator.models.timetable import Course
+from gator.core.models.timetable import Course
 
 from sqrl.graphql.objects import UserTimetableObject
 from sqrl.models import UserTimetable

@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import graphene
 from flask import current_app
-from gator.models.timetable import Course
+from gator.core.models.timetable import Course
 
 from sqrl.extensions import gator_client
 from sqrl.graphql.objects import CourseObject, PaginatedCoursesObject
