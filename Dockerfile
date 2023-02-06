@@ -24,8 +24,8 @@ COPY --chown=python:python pyproject.toml poetry.lock ./
 # Install dependencies only
 RUN poetry install --no-interaction --no-ansi --no-root --only main
 
-ARG FLASK_ENV="production"
-ENV FLASK_ENV="${FLASK_ENV}" \
+ARG FLASK_DEBUG="false"
+ENV FLASK_DEBUG="${FLASK_DEBUG}" \
     FLASK_APP="sqrl.app" \
     FLASK_SKIP_DOTENV="true" \
     PYTHONUNBUFFERED="true" \
