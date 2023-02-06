@@ -35,7 +35,7 @@ ENV FLASK_DEBUG="${FLASK_DEBUG}" \
 
 COPY --chown=python:python . .
 
-RUN if [ "${FLASK_ENV}" != "development" ]; then \
+RUN if [ "${FLASK_DEBUG}" = "false" ]; then \
   ln -s /public /app/public && rm -rf /app/public; fi
 
 EXPOSE 8000

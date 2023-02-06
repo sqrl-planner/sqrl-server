@@ -20,7 +20,7 @@ installation instructions.
 
  #### Copy starter files
  ```shell
- cp .env.example. .env
+ cp .env.example .env
  ```
  The defaults are for running in *development* mode. Go through each variable in the file and make sure it is properly set. You will likely need to update the
  credentials.

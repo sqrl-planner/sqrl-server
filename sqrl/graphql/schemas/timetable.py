@@ -2,7 +2,6 @@
 from typing import Optional
 
 import graphene
-
 from gator.core.models.timetable import Course
 
 from sqrl.graphql.objects import UserTimetableObject
@@ -19,13 +18,24 @@ class TimetableQuery(graphene.ObjectType):
         self, info: graphene.ResolveInfo, id: str
     ) -> Optional[UserTimetable]:
         """Return a UserTimetable object with the given id."""
-        return UserTimetable.objects.get(id=id)
+        timetable = UserTimetable.objects.get(id=id)
+        if timetable is None or timetable.deleted:
+            return None
+        else:
+            return timetable
 
 
 class SetTimetableNameMutation(graphene.Mutation):
     """Create timetable mutation in the graphql schema."""
 
     class Arguments:
+        """Arguments for the mutation.
+
+        Instance Attributes:
+            id: The id of the timetable to set the name of.
+            key: A private key to verify the user has permission to set the name.
+            name: The new name of the timetable.
+        """
         id = graphene.ID(required=True)
         key = graphene.String(required=True)
         name = graphene.String(required=True, default_value=None)
@@ -40,7 +50,7 @@ class SetTimetableNameMutation(graphene.Mutation):
         key: str,
         name: str,
     ) -> 'SetTimetableNameMutation':
-        """Set a timetable's name"""
+        """Set a timetable's name."""
         timetable = UserTimetable.objects.get(id=id)
         if timetable is None:
             raise Exception(f'could not find timetable with id "{id}"')
@@ -58,6 +68,11 @@ class CreateTimetableMutation(graphene.Mutation):
     """Create timetable mutation in the graphql schema."""
 
     class Arguments:
+        """Arguments for the mutation.
+
+        Instance Attributes:
+            name: The name of the new timetable.
+        """
         name = graphene.String(required=False, default_value=None)
 
     timetable = graphene.Field(UserTimetableObject)
@@ -78,6 +93,12 @@ class DuplicateTimetableMutation(graphene.Mutation):
     """Delete timetable mutation in the graphql schema."""
 
     class Arguments:
+        """Arguments for the mutation.
+
+        Instance Attributes:
+            id: The id of the timetable to duplicate.
+            name: The name of the new timetable.
+        """
         id = graphene.ID(required=True)
         name = graphene.String(required=False, default_value=None)
 
@@ -108,6 +129,12 @@ class DeleteTimetableMutation(graphene.Mutation):
     """Delete timetable mutation in the graphql schema."""
 
     class Arguments:
+        """Arguments for the mutation.
+
+        Instance Attributes:
+            id: The id of the timetable to delete.
+            key: The private key to authorize the deletion.
+        """
         id = graphene.ID(required=True)
         key = graphene.String(required=True)
 
@@ -132,6 +159,13 @@ class RemoveCourseTimetableMutation(graphene.Mutation):
     """Remove course from timetable mutation in the graphql schema."""
 
     class Arguments:
+        """Arguments for the mutation.
+
+        Instance Attributes:
+            id: The id of the timetable to remove the course from.
+            key: The key of the timetable to remove the course from.
+            course_id: The id of the course to remove from the timetable.
+        """
         id = graphene.ID(required=True)
         key = graphene.String(required=True)
         course_id = graphene.String(required=True)
@@ -166,6 +200,14 @@ class AddSectionsTimetableMutation(graphene.Mutation):
     """Add sections to timetable mutation in the graphql schema."""
 
     class Arguments:
+        """Arguments for the mutation.
+
+        Instance Attributes:
+            id: The id of the timetable to add the sections to.
+            key: A private key to authorize adding sections to the timetable.
+            course_id: The id of the course to add the sections to.
+            sections: The sections to add to the course.
+        """
         id = graphene.ID(required=True)
         key = graphene.String(required=True)
         course_id = graphene.String(required=True)
@@ -211,6 +253,14 @@ class SetSectionsTimetableMutation(graphene.Mutation):
     """Set sections in timetable mutation in the graphql schema."""
 
     class Arguments:
+        """Arguments for the mutation.
+
+        Instance Attributes:
+            id: The id of the timetable to set the sections in.
+            key: A private key to authorize setting sections in the timetable.
+            course_id: The id of the course to set the sections in.
+            sections: The sections to set in the course.
+        """
         id = graphene.ID(required=True)
         key = graphene.String(required=True)
         course_id = graphene.String(required=True)
@@ -226,9 +276,10 @@ class SetSectionsTimetableMutation(graphene.Mutation):
         course_id: str,
         sections: list[str],
     ) -> 'SetSectionsTimetableMutation':
-        """Set sections in a timetable. If a section of the same type for the
-        given course exists in the timetable, then it is removed and replaced
-        with the new one.
+        """Set sections in a timetable.
+
+        If a section of the same type for the given course exists in the
+        timetable, then it is removed and replaced with the new one.
         """
         timetable = UserTimetable.objects.get(id=id)
         if timetable is None:
