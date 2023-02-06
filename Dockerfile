@@ -14,13 +14,15 @@ RUN chmod -R 777 /usr/local/src
 
 USER python
 
-COPY --chown=python:python pyproject.toml ./
-COPY --chown=python:python poetry.lock ./
+# Install poetry
+RUN pip3 install --user --no-cache-dir "poetry>=1.0.0"
+ENV PATH="/home/python/.local/bin:${PATH}"
 
-COPY --chown=python:python bin/ ./bin
+# Copy pyproject.toml and poetry.lock
+COPY --chown=python:python pyproject.toml poetry.lock ./
 
-# System dependencies
-RUN chmod 0755 bin/* && bin/poetry-install
+# Install dependencies only
+RUN poetry install --no-interaction --no-ansi --no-root --only main
 
 ARG FLASK_ENV="production"
 ENV FLASK_ENV="${FLASK_ENV}" \
@@ -38,8 +40,8 @@ RUN if [ "${FLASK_ENV}" != "development" ]; then \
 
 EXPOSE 8000
 
-# Project dependencies
-RUN poetry install --no-interaction --no-ansi
+# Install project
+RUN poetry install --no-interaction --no-ansi --only main
 
 # Use poetry to start a gunicorn server
 CMD ["poetry", "run",\
