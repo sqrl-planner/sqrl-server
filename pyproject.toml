@@ -1,12 +1,21 @@
 [tool.poetry]
 name = "sqrl-server"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Backend API server for Sqrl Planner."
+authors = ["Shon Verch <verchshon@gmail.com>", "Eamon Ma <m@eamonma.com>"]
+license = "MIT"
+readme = "README.md"
+
 packages = [
     { include = "sqrl" }
 ]
-readme = "README.md"
+include = [
+    { path = "tests", format = "sdist" }
+]
+exclude = [
+    "**/*.pyc",
+    "**/*.pyi",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -36,7 +45,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pyright]
-include = ["sqrl-server/**", "tests/**"]
+include = ["sqrl/**", "tests/**"]
 exclude = ["**/__pycache__"]
 
 typeCheckingMode = "basic"
