@@ -1,10 +1,6 @@
 name: PyTest
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main, develop ]
+on: [push]
 
 jobs:
   build:
@@ -23,8 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
-          export POETRY_VIRTUALENVS_CREATE=false
           poetry install
       - name: Test with pytest
         run: |
-          pytest
+          poetry run pytest
