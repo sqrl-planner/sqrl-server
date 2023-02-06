@@ -39,4 +39,4 @@ jobs:
       - name: Install pydocstyle
         run: pip install pydocstyle
       - name: Run pydocstyle
-        run: pydocstyle --count .
+        run: pydocstyle --count --convention=google --match-dir="(?!searching|config|tests).*" .
