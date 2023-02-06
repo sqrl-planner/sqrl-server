@@ -30,6 +30,7 @@ repos:
           - --source
           - --explain
           - --convention=google
+          - --match-dir="(?!searching|config|tests).*"
         additional_dependencies: ["toml"]
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.3.1
