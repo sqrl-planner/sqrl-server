@@ -1,37 +1,62 @@
 [tool.poetry]
 name = "sqrl-server"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Backend API server for Sqrl Planner."
+authors = ["Shon Verch <verchshon@gmail.com>", "Eamon Ma <m@eamonma.com>"]
+license = "MIT"
+readme = "README.md"
+
 packages = [
     { include = "sqrl" }
+]
+include = [
+    { path = "tests", format = "sdist" }
+]
+exclude = [
+    "**/*.pyc",
+    "**/*.pyi",
 ]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Flask = "<2"
-gunicorn = "^20.1.0"
+setuptools = "^65.6.3"
+Flask = "^2.2.2"
 Flask-Cors = "^3.0.10"
 flask-mongoengine = "^1.0.0"
-graphql-server = {extras = ["flask"], version = "^3.0.0-beta.5"}
+gunicorn = "^20.1.0"
 graphene-mongo = "^0.2.14"
-bs4 = "^0.0.1"
-requests = "^2.28.0"
-tqdm = "^4.64.0"
-yaspin = "^2.1.0"
+graphql-server = { git = "https://github.com/graphql-python/graphql-server.git", rev = "master", extras = ["flask"] }
+typing-extensions = "^4.4.0"
 petname = "^2.6"
-setuptools = "^62.5.0"
-MarkupSafe = "2.0.1"
+gator-client = "^0.3.0"
+gator-core = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
 pytest-cov = "^3.0.0"
 pytest-mock = "^3.7.0"
-flake8 = "^4.0.1"
-autopep8 = "^1.6.0"
-pydocstyle = "^6.1.1"
-isort = "^5.10.1"
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = "^0.21.1"
+pre-commit = "^3.0.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+include = ["sqrl/**", "tests/**"]
+exclude = ["**/__pycache__"]
+
+typeCheckingMode = "basic"
+pythonVersion = "3.9"
+pythonPlatform = "All"
+typeshedPath = "typeshed"
+enableTypeIgnoreComments = true
+
+# This is required as the CI pre-commit does not download required modules
+reportMissingImports = "none"
+
+[tool.pydocstyle]
+convention = "google"
+match-dir = "(?!searching|config|tests).*"

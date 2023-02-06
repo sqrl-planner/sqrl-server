@@ -55,7 +55,7 @@ def vectorise_courses_2(
 def vector_search(
     query: str, model: SentenceTransformer, index: np.ndarray, k: int = 10
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Tranforms query to vector using a sentence-level transformer model and finds similar
+    """Transforms query to vector using a sentence-level transformer model and finds similar
     vectors using FAISS. Returns the ids of the top k results and their distances.
 
     Args:

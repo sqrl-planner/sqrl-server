@@ -1,9 +1,0 @@
-{
-    "python.pythonPath": "f:\\Programming\\Exercises\\uoft-schedule-builder\\venv\\Scripts\\python.exe",
-    "[python]": {
-        "editor.semanticHighlighting.enabled": false
-    },
-    "editor.rulers": [
-        79
-    ]
-}

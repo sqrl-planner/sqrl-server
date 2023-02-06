@@ -3,7 +3,7 @@ x-app: &default-app
     context: "."
     target: "app"
     args:
-      - "FLASK_ENV=${FLASK_ENV:-production}"
+      - "FLASK_DEBUG=${FLASK_DEBUG:-false}"
   env_file:
     - ".env"
   restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
@@ -17,7 +17,6 @@ x-app: &default-app
 services:
   mongodb:
     image: mongo:latest
-    container_name: mongodb
     restart: always
     env_file:
       - ".env"
@@ -26,12 +25,20 @@ services:
         MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
         MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     ports:
-      - 27017:27017
+      - 27018:27018
     volumes:
       - mongodb:/data/db
+    deploy:
+      resources:
+        limits:
+          cpus: "${DOCKER_MONGODB_CPUS:-0}"
+          memory: "${DOCKER_MONGODB_MEMORY:-0}"
+    networks:
+      - default
 
   web:
     <<: *default-app
+    hostname: sqrl_server
     deploy:
       resources:
         limits:
@@ -47,6 +54,12 @@ services:
       - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:8000"
     links:
       - mongodb
+    networks:
+      - default
 
 volumes:
   mongodb: {}
+
+networks:
+  default:
+    name: sqrl_network

@@ -1,4 +1,4 @@
-FROM python:3.9.0-slim-buster AS app
+FROM python:3.9.0-slim-buster as APP
 
 WORKDIR /app
 
@@ -10,18 +10,22 @@ RUN apt-get update \
   && useradd --create-home python \
   && chown python:python -R /app
 
+RUN chmod -R 777 /usr/local/src
+
 USER python
 
-COPY --chown=python:python pyproject.toml ./
-COPY --chown=python:python poetry.lock ./
+# Install poetry
+RUN pip3 install --user --no-cache-dir "poetry>=1.0.0"
+ENV PATH="/home/python/.local/bin:${PATH}"
 
-COPY --chown=python:python bin/ ./bin
+# Copy pyproject.toml and poetry.lock
+COPY --chown=python:python pyproject.toml poetry.lock ./
 
-# System dependencies
-RUN chmod 0755 bin/* && bin/poetry-install
+# Install dependencies only
+RUN poetry install --no-interaction --no-ansi --no-root --only main
 
-ARG FLASK_ENV="production"
-ENV FLASK_ENV="${FLASK_ENV}" \
+ARG FLASK_DEBUG="false"
+ENV FLASK_DEBUG="${FLASK_DEBUG}" \
     FLASK_APP="sqrl.app" \
     FLASK_SKIP_DOTENV="true" \
     PYTHONUNBUFFERED="true" \
@@ -31,14 +35,14 @@ ENV FLASK_ENV="${FLASK_ENV}" \
 
 COPY --chown=python:python . .
 
-RUN if [ "${FLASK_ENV}" != "development" ]; then \
+RUN if [ "${FLASK_DEBUG}" = "false" ]; then \
   ln -s /public /app/public && rm -rf /app/public; fi
-
-RUN pip3 install --user --no-cache-dir .  # run setup.py
 
 EXPOSE 8000
 
-# Project dependencies
-RUN POETRY_VIRTUALENVS_CREATE=false poetry install --no-interaction --no-ansi
+# Install project
+RUN poetry install --no-interaction --no-ansi --only main
 
-CMD ["gunicorn", "-c", "python:config.gunicorn", "sqrl.app:create_app()"]
+# Use poetry to start a gunicorn server
+CMD ["poetry", "run",\
+     "gunicorn", "-c", "python:config.gunicorn", "sqrl.app:create_app()"]
