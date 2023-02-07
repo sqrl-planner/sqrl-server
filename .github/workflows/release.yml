@@ -22,14 +22,18 @@ jobs:
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      # Extract the tag name from the git ref, excluding the leading "v"
       -
         uses: actions/github-script@v6
         id: extract-tag
         with:
           script: |
-            const tag = context.ref.replace(/^refs\/tags\//, '')
-            core.setOutput('tag', tag)
+            const tag = context.ref.replace('refs/tags/', '')
+            if (tag.startsWith('v')) {
+              core.setOutput('tag', tag.substring(1))
+            } else {
+              core.setOutput('tag', tag)
+            }
+
             core.setOutput('result-encoding', 'string')
             console.log(`Using tag: ${tag}`)
       -
