@@ -27,15 +27,14 @@ jobs:
         id: extract-tag
         with:
           script: |
-            const tag = context.ref.replace('refs/tags/', '')
+            let tag = context.ref.replace('refs/tags/', '');
             if (tag.startsWith('v')) {
-              core.setOutput('tag', tag.substring(1))
-            } else {
-              core.setOutput('tag', tag)
+              tag = tag.substring(1);
             }
 
-            core.setOutput('result-encoding', 'string')
-            console.log(`Using tag: ${tag}`)
+            core.setOutput('tag', tag);
+            core.setOutput('result-encoding', 'string');
+            console.log(`Using tag: ${tag}`);
       -
         name: Build and push
         uses: docker/build-push-action@v4
