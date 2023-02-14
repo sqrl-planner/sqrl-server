@@ -5,8 +5,7 @@ from sqrl.data.sources import utsg as utsg_source
 
 SECRET_KEY = os.getenv('SECRET_KEY', None)
 
-SERVER_NAME = os.getenv(
-    'SERVER_NAME', 'localhost:{0}'.format(os.getenv('PORT', '8000')))
+SERVER_NAME = os.getenv('SERVER_NAME') or None
 
 ENV = os.getenv('FLASK_ENV', 'production')
 
