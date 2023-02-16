@@ -29,8 +29,10 @@ def create_app(settings_override: Any = None) -> Flask:
 
     from sqrl.extensions.cors import cors
     from sqrl.extensions.db import db
+    from sqrl import blueprints
     db.init_app(app)
     cors.init_app(app)
+    blueprints.register(app)
 
     # Register mimetypes
     mimetypes.add_type('text/css', '.css')
