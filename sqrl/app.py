@@ -22,11 +22,17 @@ def create_app(settings_override: Any = None) -> Flask:
 
     init_middleware(app)
 
+    # Register extensions with the app
+    import sqrl.extensions as extensions
+    extensions.init_app(app)
+
+    # Register GraphQL with the app
     from sqrl import graphql
     graphql.init_app(app)
 
-    import sqrl.extensions as extensions
-    extensions.init_app(app)
+    # Register blueprints
+    from sqrl import blueprints
+    blueprints.register(app)
 
     return app
 
