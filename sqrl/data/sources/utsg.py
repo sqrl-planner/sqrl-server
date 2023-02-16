@@ -195,12 +195,13 @@ class UTSG_ArtsSci_TimetableDatasetSource(TimetableDatasetSource):
         request = requests.get(cls.ROOT_URL, cls.DEFAULT_HEADERS)
         soup = BeautifulSoup(request.content, 'html.parser')
 
-        # The search button contains the session code
-        search_button = soup.find(
-            'input', {'id': 'searchButton', 'class': 'btnSearch'})
+        # Find script tag with "var session = <session_code>;" in it
+        SESSION_CODE_PATTERN = re.compile(r'var session = (\d{5});')
+        script_tag = soup.find('script', string=SESSION_CODE_PATTERN)
+        if script_tag is None:
+            raise ValueError('failed to find session code!')
 
-        SESSION_CODE_PATTERN = r'(?<=searchCourses\(\')\d{5}(?=\'\))'
-        matches = re.findall(SESSION_CODE_PATTERN, search_button['onclick'])
+        matches = re.findall(SESSION_CODE_PATTERN, script_tag.text)
         if len(matches) == 0:
             raise ValueError('failed to find session code!')
 
