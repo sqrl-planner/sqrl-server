@@ -21,9 +21,9 @@ class FlaskGatorClient:
         """Initialise the Gator client with a Flask app context."""
         self.app = app
 
-        base_url = app.config.get('GATOR_CLIENT_URL', None)
+        base_url = app.config.get('GATOR_HOST', None)
         if base_url is None:
-            raise ValueError('GATOR_CLIENT_URL not set')
+            raise ValueError('GATOR_HOST not set')
 
         self.client = GatorClient(
             base_url,

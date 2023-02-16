@@ -14,4 +14,4 @@ MONGODB_SETTINGS = {
     'password': os.getenv('MONGODB_PASSWORD'),
 }
 
-GATOR_CLIENT_URL = os.getenv('GATOR_CLIENT_URL')
+GATOR_HOST = os.getenv('GATOR_HOST')
